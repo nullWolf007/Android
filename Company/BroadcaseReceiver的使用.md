@@ -22,7 +22,7 @@ public class mBroadcastReceiver extends BroadcastReceiver {
 }
 ```
 2. 广播接收器注册(静态注册和动态注册)
-* 静态注册(略)：在AndroidManifest.xml里通过 &lt;receive &lt;标签声明
+* 静态注册(略)：在AndroidManifest.xml里通过&lt;receive&gt;标签声明
 
 
 ### 参考文章
