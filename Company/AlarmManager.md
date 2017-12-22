@@ -11,10 +11,10 @@ PendingIntent pi = PendingIntent.getBroadcast(this,0,intent,0);
 2. AlarmManager的三个常用方法
 ```java
 set(int type，long startTime，PendingIntent pi)
-//该方法用于设置一次性闹钟，第一个参数表示闹钟类型，第二个参数表示闹钟执行时间，第三个参数表示闹钟响应动作
+//该方法用于设置一次性闹钟，type表示闹钟类型，startTime表示闹钟执行时间，pi表示闹钟响应动作
 ```
 ```java
 setRepeating(int type，long startTime，long intervalTime，PendingIntent pi)
-//该方法用于设置重复闹钟，第一个参数表示闹钟类型，第二个参数表示闹钟首次执行时间，第三个参数表示闹钟两次执行的间隔时间，第四个参数表示闹钟响应动作
+//该方法用于设置重复闹钟，type表示闹钟类型，startTime表示闹钟首次执行时间，intervalTime表示闹钟两次执行的间隔时间，pi表示闹钟响应动作
 ```
 
