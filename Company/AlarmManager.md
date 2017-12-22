@@ -2,6 +2,11 @@
 
 ## 前言
 * AlarmManager就是"提醒"，是android中常用的一种系统级别的提示服务。在特定的时刻为我们广播一个指定的Intent。使用特定的PendingIntent，PendingIntent可以理解为Intent的封装包，也就是在Intent上加个指定的动作，在使用Intent的时候，我们需要执行startActivity,startService或者sendBroadcast才能使Intent有用，PendingIntent的话就是将这个动作包含在内
+* 新建AlarmManager对象
+```java
+//AlarmManager对象,注意这里并不是new一个对象，Alarmmanager为系统级服务  
+AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);   
+```
 
 ## 基本使用步骤
 1. 定义一个PendingIntent对象
@@ -43,5 +48,7 @@ void cancel(PendingIntent pi)
 * 通过启动服务来实现闹钟提示的话：Pending.getService(Context c,int i,Intent intent,int j)方法
 * 通过广播来实现闹钟提示的话：PendingIntent.getBroadcast(Context c,int i,Intent intent,int j)方法
 * 采用Activity的方式实现闹钟提示的话：PendingIntent.getActivity(Context c,int i,Intent intent,int j)方法
+
+
 
 
