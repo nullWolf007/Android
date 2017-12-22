@@ -32,3 +32,16 @@ void cancel(PendingIntent pi)
 //取消和PendingIntent配置的闹钟服务
 ```
 
+## 参数详悉
+### type闹钟的类型
+* AlarmManager.ELAPSED_REALTIME：表示闹钟在手机睡眠状态下不可用，该状态下闹钟使用的是相对时间（相对于系统启动开始），状态值为3
+* AlarmManager.ELAPSED_REALTIME_WAKEUP：表示闹钟在睡眠状态下会唤醒系统并执行提示功能，该状态下闹钟也使用相对时间，状态值为2
+* AlarmManager.ELAPSED_REALTIME_WAKEUP：表示闹钟在睡眠状态下不可用，该状态下闹钟使用绝对时间，即当前系统时间，状态值为1
+* AlarmManager.RTC_WAKEUP：表示闹钟在睡眠状态下会唤醒系统并执行提示功能，使用绝对时间，状态值为0
+* AlarmManager.POWER_OFF_WAKEUP：表示闹钟在手机关机状态下也能正常进行提示功能，使用绝对时间，状态值为4
+### PendingIntent pi参数
+* 通过启动服务来实现闹钟提示的话：Pending.getService(Context c,int i,Intent intent,int j)方法
+* 通过广播来实现闹钟提示的话：PendingIntent.getBroadcast(Context c,int i,Intent intent,int j)方法
+* 采用Activity的方式实现闹钟提示的话：PendingIntent.getActivity(Context c,int i,Intent intent,int j)方法
+
+
