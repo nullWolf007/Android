@@ -49,6 +49,7 @@ void cancel(PendingIntent pi)
 * 通过广播来实现闹钟提示的话：PendingIntent.getBroadcast(Context c,int i,Intent intent,int j)方法
 * 采用Activity的方式实现闹钟提示的话：PendingIntent.getActivity(Context c,int i,Intent intent,int j)方法
 
-
+### 参考文章
+* [Android中的AlarmManager的使用](http://blog.csdn.net/wangxingwu_314/article/details/8060312)
 
 
