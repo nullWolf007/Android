@@ -14,3 +14,22 @@ public class MessageEvent {
     ...
 }
 ```
+2. 发送事件
+```java
+EventBus.getDefault().post(messageEvent);
+```
+3. 在需要订阅事件的地方注册事件
+```java
+EventBus.getDefault().register(this);
+```
+4. 处理事件
+```java
+@Subscribe(threadMode = ThreadMode.MAIN)
+public void XXX(MessageEvent messageEvent) {
+    ...
+}
+```
+5. 取消订阅事件
+```java
+EventBus.getDefault().unregister(this);
+```
