@@ -23,7 +23,37 @@ public class mBroadcastReceiver extends BroadcastReceiver {
 ```
 2. 广播接收器注册(静态注册和动态注册)
 * 静态注册(略)：在AndroidManifest.xml里通过&lt;receive&gt;标签声明
+* 动态注册：在代码中通过调用Context的registerReceiver()方法进行动态注册BroadcastReveiver
+```java
+@Override
+  protected void onResume(){
+      super.onResume();
+      
+    //实例化BroadcastReceiver子类 &  IntentFilter
+     mBroadcastReceiver mBroadcastReceiver = new mBroadcastReceiver();
+     IntentFilter intentFilter = new IntentFilter();
 
+    //设置接收广播的类型
+     intentFilter.addAction(android.net.conn.CONNECTIVITY_CHANGE);
+
+    //调用Context的registerReceiver（）方法进行动态注册
+     registerReceiver(mBroadcastReceiver, intentFilter);
+ }
+
+
+//注册广播后，要在相应位置记得销毁广播
+//即在onPause() 中unregisterReceiver(mBroadcastReceiver)
+//当此Activity实例化时，会动态将MyBroadcastReceiver注册到系统中
+//当此Activity销毁时，动态注册的MyBroadcastReceiver将不再接收到相应的广播。
+ @Override
+ protected void onPause() {
+     super.onPause();
+      //销毁在onResume()方法中的广播
+     unregisterReceiver(mBroadcastReceiver);
+     }
+}
+```
+动态广播最好在Activity的onResume()注册、onPause()注销。
 
 ### 参考文章
 * [Android四大组件：BroadcastReceiver史上最全面解析](http://www.jianshu.com/p/ca3d87a4cdf3)
