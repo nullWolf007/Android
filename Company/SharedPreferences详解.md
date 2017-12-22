@@ -10,3 +10,19 @@
 * Context.MODE_APPEND：该模式会检查文件是否存在，存在就往文件追加内容，否则就创建新文件
 * Context.MODE_WORLD_READABLE：弃用
 * Context.MODE_WORLD_WRITEABLE：弃用
+
+## 使用方法
+### 存数据
+```java
+SharedPreferences sp = getSharedPreferences("sp_demo", Context.MODE_PRIVATE);
+Editor editor = sp.edit();
+editor.putString("name", "小张");
+editor.putInt("age", 11);
+editor.commit();
+```
+### 取数据
+```java
+SharedPreferences sp = getSharedPreferences("sp_demo", Context.MODE_PRIVATE);
+String name = sp.getString("name", null);
+int age = sp.getInt("age", 0);
+```
