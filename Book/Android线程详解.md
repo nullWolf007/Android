@@ -23,7 +23,8 @@ public abstract class AsyncTask<Params, Progress, Result>
 ```
 * doInBackground(Params...params)
 ```java
-此方法用于执行异步任务。params参数表示异步任务的输入参数。需要返回计算结果给onPostExecute()方法。这个方法通过publishProgress方法来更新任务的进度，publishProgress方法会调用onProgressUpdate方法
+此方法用于执行异步任务。params参数表示异步任务的输入参数。需要返回计算结果给onPostExecute()方法。
+这个方法通过publishProgress方法来更新任务的进度，publishProgress方法会调用onProgressUpdate方法
 ```
 * onProgressUpdate(Progress...values)
 ```java
