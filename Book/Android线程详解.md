@@ -21,6 +21,26 @@
     new MyThread().start();
 ```
 2. implements Runnable
+```java
+    class MyThread implements Runnable{
+        @Override
+        public void run() {
+            //处理具体的逻辑
+        }
+    }
+    
+    //开启线程
+    MyThread myThread = new MyThread();
+    new Thread(myThread).start();
+```
+```java
+    new Thread(new Runnable() {
+         @Override
+         public void run() {
+            //处理具体的逻辑     
+         }
+     }).start();
+```
 
 ## AsyncTask
 ### 概述
