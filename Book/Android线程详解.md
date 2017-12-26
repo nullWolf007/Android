@@ -6,6 +6,22 @@
 * HandleThread
 * IntentService
 
+## 线程的基本用法
+1. extends Thread
+```java
+    class MyThread extends Thread{
+        @Override
+        public void run() {
+            //处理具体的逻辑
+            super.run();
+        }
+    }
+    
+    //开启线程
+    new MyThread().start();
+```
+2. implements Runnable
+
 ## AsyncTask
 ### 概述
 * AsyncTask是一种轻量级异步任务类，封装了Thread和Handle。可以方便的执行后台任务，并且能够在主线程中对返回结果进行更新UI
