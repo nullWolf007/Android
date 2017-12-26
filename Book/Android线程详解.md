@@ -9,7 +9,7 @@
 ## 线程的基本用法
 1. extends Thread
 ```java
-    class MyThread extends Thread{
+     class MyThread extends Thread{
         @Override
         public void run() {
             //处理具体的逻辑
@@ -22,7 +22,8 @@
 ```
 2. implements Runnable
 ```java
-    class MyThread implements Runnable{
+    //分开写
+    class MyThread implements Runnable{
         @Override
         public void run() {
             //处理具体的逻辑
@@ -34,7 +35,8 @@
     new Thread(myThread).start();
 ```
 ```java
-    new Thread(new Runnable() {
+    //合在一起写
+    new Thread(new Runnable() {
          @Override
          public void run() {
             //处理具体的逻辑     
