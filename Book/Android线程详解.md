@@ -60,7 +60,6 @@
                     default:
                         break;
                 }
-                super.handleMessage(msg);
             }
         };
 
@@ -75,6 +74,16 @@
             }
         }).start();
 ```
+### 异步消息处理机制
+1. Message
+* Message是在线程之间传递的消息，可以在内部携带少量的信息，例如上面的message.what = 1。也可以携带整型数据和Object对象
+2. Handle
+* Handle是处理者的意思，主要用于发送和处理消息的。发送消息使用sendMessage()，发出的消息会传递到Handle的handleMessage()方法中。
+3. MessageQueue
+* MessageQueue是消息队列的意思，用来存放所有通过Handle发送的消息，这部分消息会一直存在消息队列中，等待被处理。每个线程中只有一个MessageQueue。
+4. Looper
+* Looper是每个线程中MessageQueue的管家，调用Looper的loop()方法后，就会进入一个无限循环，然后每当发现MessageQueue中存在一条消息，就会把它取出，并传递到handle的handleMessage()方法中。每个线程中只能有一个MessageQueue对象
+
 
 ## AsyncTask
 ### 概述
