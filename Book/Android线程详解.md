@@ -47,6 +47,35 @@
      }).start();
 ```
 
+## 异步消息处理
+### 使用方法
+```java
+       final Handler handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case 1:
+                        //在这里面进行UI操作
+                        break;
+                    default:
+                        break;
+                }
+                super.handleMessage(msg);
+            }
+        };
+
+
+        //在某种情况下开启线程
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                message.what = 1;
+                handler.sendMessage(message);
+            }
+        }).start();
+```
+
 ## AsyncTask
 ### 概述
 * AsyncTask是一种轻量级异步任务类，封装了Thread和Handle。可以方便的执行后台任务，并且能够在主线程中对返回结果进行更新UI
