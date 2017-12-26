@@ -34,6 +34,12 @@ public abstract class AsyncTask<Params, Progress, Result>
 ```java
 在主线程中执行，在异步任务执行之后，此方法被调用，其中result参数时后台任务的返回值，即doInBackground的返回值
 ```
+### 执行
+* 通过execute()方法来调用，传入的参数可以在doInBackground中获取传过去的参数
+
+## 注意点
+* AsyncTask的对象必须在主线程中创建
+* execute方法必须在UI线程中调用
 
 
 
