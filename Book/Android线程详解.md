@@ -17,10 +17,22 @@ public abstract class AsyncTask<Params, Progress, Result>
 //Result表示后台任务的返回结果的类型
 ```
 ### 核心方法
-* onPreExecute()：在主线程中执行，在异步任务执行前，调用这个方法，一般用于做一些准备工作
-* doInBackground(Params...params)：此方法用于执行异步任务。params参数表示异步任务的输入参数。需要返回计算结果给onPostExecute()方法。这个方法通过publishProgress方法来更新任务的进度，publishProgress方法会调用onProgressUpdate方法
-* onProgressUpdate(Progress...values)：在主线程中执行，当后台任务的执行进度发生改变时，此方法会被调用
-* onPostExecute(Result result)：在主线程中执行，在异步任务执行之后，此方法被调用，其中result参数时后台任务的返回值，即doInBackground的返回值
+* onPreExecute()
+```java
+在主线程中执行，在异步任务执行前，调用这个方法，一般用于做一些准备工作
+```
+* doInBackground(Params...params)
+```java
+此方法用于执行异步任务。params参数表示异步任务的输入参数。需要返回计算结果给onPostExecute()方法。这个方法通过publishProgress方法来更新任务的进度，publishProgress方法会调用onProgressUpdate方法
+```
+* onProgressUpdate(Progress...values)
+```java
+在主线程中执行，当后台任务的执行进度发生改变时，此方法会被调用
+```
+* onPostExecute(Result result)
+```java
+在主线程中执行，在异步任务执行之后，此方法被调用，其中result参数时后台任务的返回值，即doInBackground的返回值
+```
 
 
 
