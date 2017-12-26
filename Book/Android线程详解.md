@@ -1,5 +1,8 @@
 # Android线程详解
 
+## 常见问题注意点
+* 在子线程中不能进行UI操作
+
 ## 四种不同形式的线程
 * Thread
 * AsyncTask
