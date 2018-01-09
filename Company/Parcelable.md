@@ -5,7 +5,7 @@
 * 存储媒介：Parcelable在内存中读写，而Serializable使用I/O读写存储在硬盘上。内存读写速度明显大于I/O读写速度
 
 ## Parcelable的基本使用方法
-### 长写方法
+### 常写方法
 ```java
 public int describeContents()：
 //内容接口描述，默认返回0就可以
