@@ -12,13 +12,15 @@ public int describeContents()：
 ```
 ```java
 public void writeToParcel(Parcel dest, int flags)：
+//负责序列化
 //写入接口函数，打包。将我们的对象序列化为一个Parcelable对象，也就是将我们的对象存入Parcel中
 ```
 ```java
 public interface Creator<T> {  
     public T createFromParcel(Parcel source);  
     public T[] newArray(int size);  
-}  
+}  
+//负责反序列化
 //实现模板参数的传入，定义Creator嵌入接口，内含两个接口函数分别返回单个和多个继承类实例
 ```
 
