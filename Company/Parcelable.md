@@ -58,3 +58,6 @@ public class TestParcelable implements Parcelable {
     };
 }
 ```
+
+## 注意点
+* 在Android中优先选择Parcelable
