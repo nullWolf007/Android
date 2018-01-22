@@ -26,3 +26,5 @@ SharedPreferences sp = getSharedPreferences("sp_demo", Context.MODE_PRIVATE);
 String name = sp.getString("name", null);
 int age = sp.getInt("age", 0);
 ```
+
+### [SharedPreferences帮助类](https://github.com/nullWolf007/Android/blob/master/Java/SharedPreferencesUtil.java)
