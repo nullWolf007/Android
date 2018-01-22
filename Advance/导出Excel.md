@@ -4,6 +4,7 @@
 * 创建excel表
 ```java
 //创建常住人口excel
+//以时间戳格式命名 避免重名
 SimpleDateFormat fsdf = new SimpleDateFormat("yyyyMMddHHmmSS");
 String excelFile = fsdf.format(System.currentTimeMillis()) + "czrk" + ".xls";
 String filePath = Constants.USB_DISK_PATH + "/" + excelFile;
@@ -50,3 +51,7 @@ try {
   }
 }
 ```
+
+## 代码解析
+* WritableWorkbook：可读写的工作簿
+* WritableSheet：对工作表进行写和读方面的操作，其中包括添加单元格、设置行高、设置列宽、添加超链接、添加图片、插入一行或一列数据和删除行或列等操作
