@@ -1,9 +1,9 @@
 # RecyclerView的使用
 
 ## Adapter基本使用
-* 继承RecyclerView.Adapter<T>,T泛型，传入的是自己创建的ViewHolder，所以RecyclerView必须实现ViewHolder
+* 继承RecyclerView.Adapter&lt;T&lt;,T泛型，传入的是自己创建的ViewHolder，所以RecyclerView必须实现ViewHolder
 * 实现onCreateViewHolder()和onBindViewHolder()和getItemCount()方法
-* onCreateViewHolder():创建ViewHolder，加载布局
+* onCreateViewHolder()：创建ViewHolder，加载布局
 * onBindViewHolder()：把数据绑定，填充到相应的itemview中
 * getItemCount()：返回数据的数量
 
