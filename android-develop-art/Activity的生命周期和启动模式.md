@@ -92,11 +92,10 @@ data的语法：
       android:pathPattern="string"
       android:pathPrefix="string"
       android:mimeType="string"/>
-```
-
-mimetype：媒体类型
 
 URI：<scheme>://<host>:<port>/[<path>|<pathPrefix>|<pathPattern>]
+mimetype：媒体类型
+```
 
 方法：
 
