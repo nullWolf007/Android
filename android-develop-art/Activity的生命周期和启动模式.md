@@ -16,13 +16,13 @@
 
 1.A-onpuse   
 
-2.onCreate
+2.B-onCreate
 
-3.onStart
+3.B-onStart
 
-4.onResume
+4.B-onResume
 
-5.onStop
+5.A-onStop
 
 ### 异常情况生命周期分析
 
