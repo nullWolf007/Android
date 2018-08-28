@@ -23,6 +23,9 @@ public interface Creator<T> {
 //负责反序列化
 //实现模板参数的传入，定义Creator嵌入接口，内含两个接口函数分别返回单个和多个继承类实例
 ```
+### 方法解释
+* 序列化功能由writeToParcel方法来实现，通过Parcel的write方法来完成
+* 反序列化由CREATOR来完成，通过Parcel的read方法来实现
 
 ### 实例
 ```java
