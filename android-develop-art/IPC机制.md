@@ -254,7 +254,7 @@
 
    - DESCRIPTION
 
-     > Binder的唯一标识，一般用当前Binder的雷鸣表示
+     > Binder的唯一标识，一般用当前Binder的类名表示
 
    - asInterface(android.os.IBinder obj)
 
@@ -282,7 +282,11 @@
 
    - Proxy#getBookList
 
-     > 运行在客户端。首先创建该方法所需要的输入型Parcel对象\_data、输出型Parcel对象\_reply和返回值对象List；然后把该方法的参数信息写入\_data中，接着调用transact方法来发起RPC(远程过程请求)，同时当前线程挂起；然后服务端的onTransact方法会被调用，直至RPC过程返回后，当前线程继续执行，并从\_reply中取出RPC过程的返回结果，最后返回\_reply中的数据
+     > 运行在客户端。首先创建该方法所需要的输入型Parcel对象\_data、输出型Parcel对象\_reply和返回值对象List；
+     >
+     > 然后把该方法的参数信息写入\_data中，接着调用transact方法来发起RPC(远程过程请求)，同时当前线程挂起；
+     >
+     > 然后服务端的onTransact方法会被调用，直至RPC过程返回后，当前线程继续执行，并从\_reply中取出RPC过程的返回结果，最后返回\_reply中的数据
 
    - Proxy#addBook
 
