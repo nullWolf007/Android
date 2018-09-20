@@ -5,3 +5,5 @@
 ## [IPC机制](https://github.com/nullWolf007/Android/blob/master/android-develop-art/IPC%E6%9C%BA%E5%88%B6.md)
 
 ## [View的事件体系](https://github.com/nullWolf007/Android/blob/master/android-develop-art/View%E7%9A%84%E4%BA%8B%E4%BB%B6%E4%BD%93%E7%B3%BB.md)
+
+## [View的工作原理](https://github.com/nullWolf007/Android/blob/master/android-develop-art/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.md)
