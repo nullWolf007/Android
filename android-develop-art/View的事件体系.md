@@ -221,7 +221,7 @@ Scroller本身不能实现View的滑动；它需要配合View的computeScroll方
    	//通过x和y的滑动距离来判断是上下滑动还是左右滑动
    	//如果父容器需要当前点击事件，返回true，就不会往下传递
    	//DOWN和UP都返回false 
-   	@Override
+       @Override	
        public boolean onInterceptTouchEvent(MotionEvent ev) {
            boolean intercepted = false;
            int x = (int) ev.getX();
@@ -290,3 +290,4 @@ Scroller本身不能实现View的滑动；它需要配合View的computeScroll方
    ```
 
    
+
