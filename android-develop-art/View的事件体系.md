@@ -157,5 +157,136 @@ Scroller本身不能实现View的滑动；它需要配合View的computeScroll方
 
 ### 二、事件分发源码分析
 
+1. Activity对点击事件的分发过程
 
+   ```java
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+         // 一般事件列开始都是DOWN事件 = 按下事件，故此处基本是true
+         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+             //实现屏保功能
+             onUserInteraction();
+         }
+   
+         if (getWindow().superDispatchTouchEvent(ev)) {
+             return true;
+             //传递给了PhoneWindow对象
+             // 若getWindow().superDispatchTouchEvent(ev)的返回true 则return true 跳出方法
+             // 否则所有View的onTouchEvent都返回了false：继续往下调用Activity.onTouchEvent
+         }
+         return onTouchEvent(ev);
+    }
+   ```
 
+2. getWindow().superDispatchTouchEvent(ev)
+
+   ```java
+   //getWindow()获取Window对象，唯一实现类是PhoneWindow
+   @Override
+   public boolean superDispatchTouchEvent(MotionEvent event) {
+      return mDecor.superDispatchTouchEvent(event);
+      // mDecor = 顶层View（DecorView）的实例对象
+   }
+   //传递给了DecorView即顶级View的示例对象，即setContentView所设置的View
+   ```
+
+3. 顶级View对点击事件的分发过程
+
+   ```java
+   //即上面说的View的事件分发机制
+   //P147 源码分析
+   //子View中可以通过requestDisallowInterceptTouchEvent方法来设置FLAG_DISALLOW_INTERCEPT,一旦设置，ViewGroup就无法拦截除了ACTION_DOWN以外的其他点击事件
+   ```
+
+4. View对点击事件的处理过程
+
+   ```java
+   //P151
+   //OnTouchListener大于onTouchEvent大于onClick
+   ```
+
+   
+
+## View的滑动冲突
+
+### 处理规则
+
+- 根据情况，让特定的View拦截点击事件
+
+### 滑动冲突的解决方式
+
+1. 外部拦截法---推荐
+
+   ```java
+   	//父类进行点击事件的拦截---重写父容器的onInterceptTouchEvent方法  
+   	//通过x和y的滑动距离来判断是上下滑动还是左右滑动
+   	//如果父容器需要当前点击事件，返回true，就不会往下传递
+   	//DOWN和UP都返回false 
+   	@Override
+       public boolean onInterceptTouchEvent(MotionEvent ev) {
+           boolean intercepted = false;
+           int x = (int) ev.getX();
+           int y = (int) ev.getY();
+           switch (ev.getAction()) {
+               case MotionEvent.ACTION_DOWN:
+                   intercepted = false;
+                   break;
+               case MotionEvent.ACTION_MOVE:
+                   if (父容器需要当前点击事件) {
+                       intercepted = true;
+                   } else {
+                       intercepted = false;
+                   }
+                   break;
+               case MotionEvent.ACTION_UP:
+                   intercepted = false;
+                   break;
+               default:
+                   break;
+           }
+           return intercepted;
+       }
+   ```
+
+2. 内部拦截法
+
+   ```java
+       //子元素进行点击事件的处理，不消耗就交给父容器进行处理----重写子元素的dispatchTouchEvent方法
+       //父容器不拦截ACTION_DOWN事件，子元素通过requestDisallowInterceptTouchEvent(true)方法让父元素不再拦截其他的点击事件
+       @Override
+       public boolean dispatchTouchEvent(MotionEvent ev) {
+           int x = (int) ev.getX();
+           int y = (int) ev.getY();
+   
+           switch (ev.getAction()) {
+               case MotionEvent.ACTION_DOWN:
+                   //一旦设置  父容器无法拦截点击事件（除了ACTION_DOWN）
+                   getParent().requestDisallowInterceptTouchEvent(true);
+                   break;
+               case MotionEvent.ACTION_MOVE:
+                   if (父容器需要当前点击事件) {
+                       getParent().requestDisallowInterceptTouchEvent(false);
+                   }
+                   break;
+               case MotionEvent.ACTION_UP:
+                   break;
+               default:
+                   break;
+           }
+           return super.dispatchTouchEvent(ev);
+       }
+   ```
+
+   ```java
+       //父容器不拦截ACTION_DOWN事件，重写父容器的onInterceptTouchEvent
+       @Override
+       public boolean onInterceptTouchEvent(MotionEvent ev) {
+           int action = ev.getAction();
+           if (action == MotionEvent.ACTION_DOWN) {
+               return false;
+           } else {
+               return true;
+           }
+       }
+   ```
+
+   
