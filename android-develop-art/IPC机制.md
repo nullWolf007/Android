@@ -1,10 +1,14 @@
+
+
+[TOC]
+
 # IPC机制
 
 ## 一、前言
 
-- IPC即Inter-Process Communication的缩写，即进程间通信或者跨进程通信
+* IPC即Inter-Process Communication的缩写，即进程间通信或者跨进程通信
 
-- process属性
+* process属性
 
   ```xml
    android:process=""
@@ -16,7 +20,7 @@
 
 ### 1.特点
 
-- 不同进程的组件会拥有独立的虚拟机、Application以及内存空间
+* 不同进程的组件会拥有独立的虚拟机、Application以及内存空间
 
 ### 2.多进程存在的问题
 
@@ -34,8 +38,8 @@
 
 1. 注意点
 
-   - 静态成员属于类不属于对象，不会参与序列化过程
-   - 用transient关键字标记的成员变量不参与序列化过程
+   * 静态成员属于类不属于对象，不会参与序列化过程
+   * 用transient关键字标记的成员变量不参与序列化过程
 
    
 
@@ -251,12 +255,11 @@
        public void addBook(com.example.inspeeding_yf006.learn.bean.BookBean bookBean) throws android.os.RemoteException;
    }
    ```
-
-   - DESCRIPTION
+   * DESCRIPTION
 
      > Binder的唯一标识，一般用当前Binder的类名表示
 
-   - asInterface(android.os.IBinder obj)
+   * asInterface(android.os.IBinder obj)
 
      > 将服务端的Binder对象转换成客户端所需的AIDL接口类型的对象；
      >
@@ -264,11 +267,11 @@
      >
      > 如果不在同一进程，返回的是系统封装后的Stub.proxy对象
 
-   - asBinder
+   * asBinder
 
      > 返回当前Binder对象
 
-   - onTransact(int code, android.os.Parcel data, android.os.Parcel reply, int flags)
+   * onTransact(int code, android.os.Parcel data, android.os.Parcel reply, int flags)
 
      > 运行在服务端中的Binder线程中，当客户端发起跨进程请求时，远程请求会通过系统底层封装后交由此方法进行处理
      >
@@ -280,15 +283,15 @@
      >
      > 如果此方法返回false，则客户端的请求会失败
 
-   - Proxy#getBookList
+   * Proxy#getBookList
 
-     > 运行在客户端。首先创建该方法所需要的输入型Parcel对象\_data、输出型Parcel对象\_reply和返回值对象List；
+     >运行在客户端。首先创建该方法所需要的输入型Parcel对象\_data、输出型Parcel对象\_reply和返回值对象List；
      >
-     > 然后把该方法的参数信息写入\_data中，接着调用transact方法来发起RPC(远程过程请求)，同时当前线程挂起；
+     >然后把该方法的参数信息写入\_data中，接着调用transact方法来发起RPC(远程过程请求)，同时当前线程挂起；
      >
-     > 然后服务端的onTransact方法会被调用，直至RPC过程返回后，当前线程继续执行，并从\_reply中取出RPC过程的返回结果，最后返回\_reply中的数据
+     >然后服务端的onTransact方法会被调用，直至RPC过程返回后，当前线程继续执行，并从\_reply中取出RPC过程的返回结果，最后返回\_reply中的数据
 
-   - Proxy#addBook
+   * Proxy#addBook
 
      > 同上，只是没有返回值
 
@@ -302,11 +305,11 @@
 
 3. 使用Messenger(底层使用的AIDL)
 
-   - 一次处理一个请求，串行的处理方式，因此在服务端不用考虑线程同步问题
+   * 一次处理一个请求，串行的处理方式，因此在服务端不用考虑线程同步问题
 
-   - 使用步骤：
+   * 使用步骤：
 
-     - 服务端进程：创建一个Service来处理客户端的连接请求；创建一个Handler并通过它来创建一个Messenger对象；在Service的onBind中返回这个Messenger对象底层的Binder即可。在清单文件注册一下。
+     * 服务端进程：创建一个Service来处理客户端的连接请求；创建一个Handler并通过它来创建一个Messenger对象；在Service的onBind中返回这个Messenger对象底层的Binder即可。在清单文件注册一下。
 
        ```java
        public class MessengerService extends Service {
@@ -347,7 +350,7 @@
 
        
 
-     - 客户端进程：首先绑定服务端的Service；绑定成功后用服务端返回的IBinder对象创建一个Messager，通过这个Messenger就可以向服务器发送消息了，发送类型必须为Message对象； 如果需要服务端能够回应客户端，在客户端需要创建一个Handler并创建一个新的Messenger，并把这个Messenger对象通过Message的replyTo参数传递给服务端，服务端通过这个replayTo参数就可以回应客户端
+     * 客户端进程：首先绑定服务端的Service；绑定成功后用服务端返回的IBinder对象创建一个Messager，通过这个Messenger就可以向服务器发送消息了，发送类型必须为Message对象； 如果需要服务端能够回应客户端，在客户端需要创建一个Handler并创建一个新的Messenger，并把这个Messenger对象通过Message的replyTo参数传递给服务端，服务端通过这个replayTo参数就可以回应客户端
 
        ```java
        public class MainActivity extends AppCompatActivity {
@@ -414,11 +417,11 @@
 
 4. 使用AIDL
 
-   - 服务端：创建一个Service用来监听客户端的连接请求，然后创建一个AIDL文件，将暴露给客户端的接口在AIDL文件中声明，最后在Service中实现这个AIDL接口。
+   * 服务端：创建一个Service用来监听客户端的连接请求，然后创建一个AIDL文件，将暴露给客户端的接口在AIDL文件中声明，最后在Service中实现这个AIDL接口。
 
-   - 客户端：绑定服务器的Service，绑定成功后，将服务端返回的Binder对象转成AIDL接口所属的类型，接着就可以调用AIDL中方法。
+   * 客户端：绑定服务器的Service，绑定成功后，将服务端返回的Binder对象转成AIDL接口所属的类型，接着就可以调用AIDL中方法。
 
-   - AIDL接口的创建：AIDL的包结构在服务端和客户端要保持一致
+   * AIDL接口的创建：AIDL的包结构在服务端和客户端要保持一致
 
      ```java
      package com.example.inspeeding_yf006.learn.bean;
@@ -443,10 +446,11 @@
      AIDL接口只支持方法，不支持静态变量
      ```
 
-   - 远程服务端Service的实现：
+   * 远程服务端Service的实现：
 
-   - 客户端的实现
+   * 客户端的实现
 
-   - P73
+   * P73
+
 
 ​     
