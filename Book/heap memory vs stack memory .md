@@ -19,7 +19,7 @@
 
 ### 数据类型：基本数据类型和引用数据类型
 
-<img src="https://github.com/nullWolf007/android/blob/master/image/imageHeapStack/15165530-8a570626bf3741a1b4937759a89a5a93.png" width="630" height="360" />
+<img src="https://github.com/nullWolf007/images/blob/master/Java/heapStack/15165530-8a570626bf3741a1b4937759a89a5a93.png" width="630" height="360" />
 
 
 ### 堆和栈
