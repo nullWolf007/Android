@@ -11,7 +11,7 @@
 1. Heap作为应用的 共享内存，而Stack只是为某个执行线程所使用
 2. 当通过new方式创建一个对象是，它会被存放在heap中，而stack只会保存一个该对象的引用，stack仅仅保存临时变量和对heap中对象的引用
 3. 存储在heap中的对象是全局可访问的，而stack只能被特定的线程访问
-4. stack内存管理机制是FILO，而heap使用分带式内存管理，分成新生代，老年代，持久代三个部分([heap详细的内存机制请点击这里](https://github.com/nullWolf007/android/blob/master/%E5%AE%89%E5%8D%93%20GC.md))
+4. stack内存管理机制是FILO，而heap使用分带式内存管理，分成新生代，老年代，持久代三个部分([heap详细的内存机制请点击这里](https://github.com/nullWolf007/Android/blob/master/Book/%E5%AE%89%E5%8D%93%20GC.md))
 5. stack中数据的大小和生存周期是固定的，而heap比较灵活
 6. stack相较于heap内存空间比较小。由于内存分配策略LIFO，stack的存储速度会比heap快
 7. 利用-Xms和-Xmx来指明JVM的堆初始空间和最大空间，利用-Xss来定义栈空间大小
