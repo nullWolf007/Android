@@ -93,4 +93,4 @@ public static final class Builder {
 
 ## 参考资料
 
-* ![**OkHttp解析(一)从用法看清原理**](https://www.jianshu.com/p/7b29b89cd7b5)
+* [**OkHttp解析(一)从用法看清原理**](https://www.jianshu.com/p/7b29b89cd7b5)
