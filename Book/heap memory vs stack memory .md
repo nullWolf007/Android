@@ -33,4 +33,4 @@
 5. 栈中存放的基本数据类型和堆对象的引用。基本数据类型比较小，且是固定的，不会动态增长，所以放在栈中存放
 
 ### 对象引用类型：强引用，软引用，弱引用，虚引用
-[详细内容请点击这里](https://github.com/nullWolf007/android/blob/master/java/%E5%9B%9B%E7%A7%8D%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B.md)
+[详细内容请点击这里](https://github.com/nullWolf007/Notes/blob/master/Java/%E5%9B%9B%E7%A7%8D%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B(GC%E7%9B%B8%E5%85%B3).md)
