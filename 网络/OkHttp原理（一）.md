@@ -288,8 +288,51 @@ public interface Call extends Cloneable {
 ### 2.6 RealCall---Call的实现类
 
 ```java
-
+final class RealCall implements Call {
+    ...
+    @Override public Response execute() throws IOException {
+        
+    //检查这个Call是否已经被执行，每个Call只能执行一次，否则会抛出IllegalStateException异常。
+    //如果想要完全一样的Call，可以使用call.clone方法进行克隆
+    synchronized (this) {
+      if (executed) throw new IllegalStateException("Already Executed");
+      executed = true;
+    }
+    //跟踪调用栈的信息
+    captureCallStackTrace();
+    //EventListener 用来触发事件 接收非常细的时间回调
+    eventListener.callStart(this);
+    try {
+      //实际执行 同步的话和dispatcher有关
+      client.dispatcher().executed(this);
+      //获取http返回结果 同时会进行一系列的“拦截”操作
+      Response result = getResponseWithInterceptorChain();
+      if (result == null) throw new IOException("Canceled");
+      return result;
+    } catch (IOException e) {
+      //失败的回调
+      eventListener.callFailed(this, e);
+      throw e;
+    } finally {
+      //执行完毕
+      client.dispatcher().finished(this);
+    }
+    }
+    
+    @Override public void enqueue(Callback responseCallback) {
+    synchronized (this) {
+      if (executed) throw new IllegalStateException("Already Executed");
+      executed = true;
+    }
+    captureCallStackTrace();
+    eventListener.callStart(this);
+    client.dispatcher().enqueue(new AsyncCall(responseCallback));
+    }
+    ...
+}
 ```
+
+RealCall中实现了execute和enqueue等方法，而在RealCall的execute和enqueue方法中都调用了dispatcher.enqueue/execute
 
 
 
