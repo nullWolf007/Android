@@ -1,10 +1,3 @@
-[TOC]
-- <!-- TOC -->
-- [ 安卓面试指南](#安卓面试指南)
-  - [ 参考链接](#参考链接)
-  - [ 安卓基础篇](#安卓基础篇)
-    - [ 1.安卓的四大组件：](#1安卓的四大组件：)
-  <!-- /TOC -->
 # 安卓面试指南
 
 ### 参考链接
@@ -15,13 +8,12 @@
 
 ---
 
-#### 1.安卓的四大组件：
+#### 1.安卓的四大组件
 
 * Activity，Service，BroadcastReceive广播接收者，ContentProvider内容提供者
 
-**2.Activity的生命周期和相关问题：**
-
- <img src="https://github.com/mumucom/android/blob/master/image/0_1314838777He6C.gif.png" width = "420" height = "520" alt="图片名称" align=center />
+#### 2.Activity的生命周期和相关问题
+![Activity的生命周期](https://github.com/mumucom/android/raw/master/image/0_1314838777He6C.gif.png)
 
 (1)各种场景Activity的生命周期：
 
@@ -35,12 +27,10 @@
 * 当Activity重启时，AsyncTask中对该Activity的引用是无效的，因此onPostExecute()就不会起作用，若AsynTask正在执行，会报 view not attached to window manager 异常。为了是两者的生命周期一致(同时被销毁)，我们可以在Activity的onDestory()方法中调用AsnyTask.cancel()方法
 
 (3)内存不足时，系统会杀死Activity,如果需要保存一些临时状态，在那个方法中进行？(临时)
-        
 
 * Activity的 onSaveInstanceState() 和 onRestoreInstanceState()并不是生命周期方法,不同于 onCreate()、onPause()等生命周期方法，它们并不一定会被触发。当应用遇到意外情况（如：内存不足、用户直接按Home键）由系统销毁一个Activity，onSaveInstanceState() 会被调用。但是当用户主动去销毁一个Activity时，例如在应用中按返回键，onSaveInstanceState()就不会被调用。除非该activity是被用户主动销毁的，通常onSaveInstanceState()只适合用于保存一些临时性的状态。
 
 (4)Activity的四种launchMode：standard，single Top，single Task，single Instance。
-       
 
 * standard：默认的方式，每次都会创建Activity实例，然后放进任务栈中
 * single Top：如果任务栈中刚好Activity实例处在栈顶，则重用此Activity实例，处于栈中或者不存在此Activity实例，都需要创建新的Activity实例
@@ -48,7 +38,6 @@
 * single Instance：在一个新的栈中创建一个新的Activity实例，并且只有他一个，下次激活，就会重用此栈中的Activity实例。适合多个应用共享一个应用
 
 (5)Activity启动Service的两种方式
-        
 
 * startService：生命周期和调用者不同，如果启动者未调用stopService就退出了，Service仍在运行
 
@@ -56,12 +45,9 @@
 
 **3.Fragment的生命周期和相关问题**
 
-<table>
-        <tr>
-                <td><img src="https://github.com/mumucom/android/blob/master/image/20140719225005356.png" alt="图片名称" align=center /></td>
-                <td><img src="https://github.com/mumucom/android/blob/master/image/FlowchartDiagram.jpg"  alt="图片名称" align=center /></td>
-        </tr>
-</table>
+|                       Fragment生命周期                       |                        Fragment流程图                        |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+| ![Fragment生命周期](https://github.com/mumucom/android/raw/master/image/20140719225005356.png) | ![Fragment流程图](https://github.com/mumucom/android/raw/master/image/FlowchartDiagram.jpg) |
 
 (1)一个Activity可以有多个Fragment，一个Fragment可以在多个Activity中；可以动态的添加，替换和移除Fragment
 (2)静态的使用Fragment
@@ -70,7 +56,6 @@
 * 在Activity中声明Fragment
 
 **4.广播(Broadcast Receiver)的两种注册方式：动态注册和静态注册的区别？**
-        
 
 * 静态注册：在AndroidManifest.xml中注册，当程序退出的时候，Receiver仍旧会接受广播并进行处理。其不会受程序的生命周期影响
 * 动态注册：在代码中动态注册，当程序退出的时候，就无法接受广播了
