@@ -16,7 +16,7 @@
 
 ## 二、继承关系
 
-![Context](https://github.com/mumucom/android/raw/master/image/4892003-8a2fe7f887f73252.png)
+![Context](https://github.com/nullWolf007/images/raw/master/android/%E8%BF%9B%E9%98%B6/Context%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB.png)
 
 * 通过上图我们可以了解到，Context的直接子类为ContextWrapper(实现类)和ContextImpl(包装类)。ContextWrapper的子类有Application、Service、ContextThemeWrapper。而Activity是ContextThemeWrapper的子类。为什么Activity不再同一级呢？因为对于Activity有Theme的区别，Activity可以指定主题，而Application、Service没有主题。
 

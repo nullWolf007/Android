@@ -7,16 +7,16 @@
     dependencies {
     compile 'com.squareup.picasso:picasso:2.5.1'
     }
-```    
-    
+```
+
 **Glide**
 ``` javascript 
     dependencies {
     compile 'com.github.bumptech.glide:glide:3.5.2'
     compile 'com.android.support:support-v4:22.0.0'
     }
-```    
-     
+```
+
 Glide的使用是基于support-v4的，所以也要导入(对于安卓项目，这几乎是必须的，V4包)。至于Picassoh和Glide的版本号，根据你的需要选择。
 
 
@@ -31,7 +31,7 @@ Glide的使用是基于support-v4的，所以也要导入(对于安卓项目，�
      .centerCrop()
      .placeholder(R.drawable.loading_spinner)
      .into(myImageView);
-``` 
+```
 
 **Glide**
 ``` javascript
@@ -45,7 +45,7 @@ Glide的使用是基于support-v4的，所以也要导入(对于安卓项目，�
 
 但是GLide有个令人满意的地方Glide的.with()方法可以是Activity也可以是Fragment。
 
-<img src="https://github.com/nullWolf007/android/blob/master/image/imageGlidePicasso/with.png" width="660" height="320"/>
+![](https://github.com/nullWolf007/android/raw/master/image/imageGlidePicasso/with.png)
 
 
 ## Different Default Bitmap Format
