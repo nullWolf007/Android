@@ -186,5 +186,5 @@ public class ContextWrapper extends Context {
 ### 4.1ActivityThread
 
 * 我们常常会误认为Android程序的入口是Application的onCreate()方法，其实这是错误的想法。其实Android程序的入口是ActivityThread的main的方法
-* 查看ActivityThread详细内容请点击[ActivityThread]()
-
+* 查看ActivityThread详细内容请点击[ActivityThread深入理解及源码解析](https://github.com/nullWolf007/Android/blob/master/%E8%BF%9B%E9%98%B6/ActivityThread%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%8F%8A%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90.md)
+* 
