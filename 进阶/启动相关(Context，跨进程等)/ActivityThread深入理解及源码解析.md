@@ -1,5 +1,9 @@
 # ActivityThread深入理解及源码解析
 
+### 参考链接
+
+* [ActivityThread的main方法究竟做了什么？](https://www.jianshu.com/p/0efc71f349c8)
+
 ### 一、ActivityThread关联图
 
 ![ActivityThread关联图](https://github.com/nullWolf007/images/raw/master/android/%E8%BF%9B%E9%98%B6/ActivityThread%E5%85%B3%E8%81%94%E5%9B%BE.png)
@@ -181,5 +185,5 @@
     }
     ```
   
-  * 2.调用**ActivityManagerService**的attachApplication()方法，将mAppThread 作为参数传入ActivityManagerService，这样ActivityManagerService就可以调用**ApplicaitonThread**的接口了，这样就把AMS和ActivityThread联系起来了
+  * 2.调用**ActivityManagerService**的attachApplication()方法，将mAppThread 作为参数传入ActivityManagerService，这样ActivityManagerService就可以调用**ApplicaitonThread**的接口了，这样就把AMS和ActivityThread通过Binder联系起来了
 
