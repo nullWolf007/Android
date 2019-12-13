@@ -150,38 +150,62 @@
 
 ## 三、AIDL
 
-### 3.1 AIDL实例
+### 3.1 AIDL支持的数据类型
+
+* 基本数据类型（int,long,char,boolean,double等）
+
+* String和CharSequence
+
+* List:只支持ArrayList，里面每个元素都必须能够被AIDL支持
+
+* Map：只支持HashMap,里面每个元素都必须被AIDL支持，包括key和value
+
+* Parcelable:所有实现了Parcelable接口的对象
+
+* AIDL：所有的AIDL接口本身也可以在AIDL文件中使用；AIDL中除了基本数据类型，其他数据类型必须标上方向：in out inout ；AIDL接口只支持方法，不支持静态变量
+
+### 3.2 AIDL实例
 
 * 查看代码实例请点击[AIDL实例](https://github.com/nullWolf007/ToolProject/tree/master/AIDL%E7%9A%84demo%E7%9A%84%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81/app/src/main)
 
-### 3.2 实例说明
+### 3.3 实例说明
 
-#### 3.2.1 DESCRIPTION
+#### 3.3.1 DESCRIPTION
 
 * Binder的唯一标识，一般用当前Binder的类名表示
 
-#### 3.2.2 asInterface()
+#### 3.3.2 asInterface()
 
 * asInterface(android.os.IBinder obj)
 
 * 将服务端的Binder对象转换成客户端所需的AIDL接口类型的对象；如果客户端和服务端位于同一进程，返回的是服务端的Stub对象本身；如果不在同一进程，返回的是系统封装后的Stub.proxy对象
 
-#### 3.2.3 asBinder
+#### 3.3.3 asBinder
 
 * 返回当前Binder对象
 
-#### 3.2.4 onTransact()
+#### 3.3.4 onTransact()
 
 * onTransact(int code, android.os.Parcel data, android.os.Parcel reply, int flags)
 * 运行在服务端中的Binder线程中，当客户端发起跨进程请求时，远程请求会通过系统底层封装后交由此方法进行处理；服务端通过code可以确定客户端所请求的目标方法是什么，接着从data中取出目标方法所需的参数，然后执行目标方法；执行完毕后，像reply中写入返回值，如果此方法返回false，则客户端的请求会失败。
 
-#### 3.2.5 Proxy#getBookList
+#### 3.3.5 Proxy#getBookList
 
 * 运行在客户端。首先创建该方法所需要的输入型Parcel对象\_data、输出型Parcel对象\_reply和返回值对象List；然后把该方法的参数信息写入\_data中，接着调用transact方法来发起RPC(远程过程请求)，同时当前线程挂起；然后服务端的onTransact方法会被调用，直至RPC过程返回后，当前线程继续执行，并从\_reply中取出RPC过程的返回结果，最后返回\_reply中的数据
 
-#### 3.2.6 Proxy#addBook
+#### 3.3.6 Proxy#addBook
 
 * 同上，只是没有返回值
+
+## 四、Messenger
+
+### 4.1 说明
+
+* 通过Messenger可以在不同的进程中传递Message对象，在Message中放入我们需要传递的数据，就可以轻松的实现数据的进程间传递了。Messenger是一种轻量级的IPC方案，它的底层实现是AIDL。只能传输Bundle支持的数据格式。
+
+### 4.1 Messenger实例
+
+
 
 
 
@@ -338,22 +362,10 @@
      }
      ```
 
-     ```text
-     AIDL支持的数据类型：
-     1. 基本数据类型（int,long,char,boolean,double等）
-     2. String和CharSequence
-     3. List:只支持ArrayList，里面每个元素都必须能够被AIDL支持
-     4. Map：只支持HashMap,里面每个元素都必须被AIDL支持，包括key和value
-     5. Parcelable:所有实现了Parcelable接口的对象
-     6. AIDL：所有的AIDL接口本身也可以在AIDL文件中使用
-     AIDL中除了基本数据类型，其他数据类型必须标上方向：in out inout 
-     AIDL接口只支持方法，不支持静态变量
-     ```
-
    * 远程服务端Service的实现：
-
+   
    * 客户端的实现
-
+   
    * P73
 
 
