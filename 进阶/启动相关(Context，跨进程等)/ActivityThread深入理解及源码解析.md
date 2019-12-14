@@ -1,3 +1,5 @@
+[TOC]
+
 # ActivityThread深入理解及源码解析
 
 ### 参考链接
@@ -186,4 +188,384 @@
     ```
   
   * 2.调用**ActivityManagerService**的attachApplication()方法，将mAppThread 作为参数传入ActivityManagerService，这样ActivityManagerService就可以调用**ApplicaitonThread**的接口了，这样就把AMS和ActivityThread通过Binder联系起来了
+
+### 三、ActivityThread关联时机
+
+#### 3.1 APP的启动过程
+
+* 可以点击查看[APP的启动过程](https://github.com/nullWolf007/Android/blob/master/进阶/启动相关(Context%EF%BC%8C跨进程等)/APP的启动过程.md)
+
+#### 3.2 ActivityThread中的handlerMessage
+
+* 从APP的启动过程中，我们可以了解到ApplicationThread和ActivityThread之间是通过handler及性能通信的，所以我们可以在ActivityThread中发现handlerMessage()方法，该方法会对Message消息进行判断做相应的处理，如下图代码
+
+* ```java
+      private class H extends Handler {
+          public static final int LAUNCH_ACTIVITY         = 100;
+          public static final int PAUSE_ACTIVITY          = 101;
+          public static final int PAUSE_ACTIVITY_FINISHING= 102;
+          public static final int STOP_ACTIVITY_SHOW      = 103;
+          //省略了 太多了
+          
+          String codeToString(int code) {
+              if (DEBUG_MESSAGES) {
+                  switch (code) {
+                      case LAUNCH_ACTIVITY: return "LAUNCH_ACTIVITY";
+                      case PAUSE_ACTIVITY: return "PAUSE_ACTIVITY";
+                      case PAUSE_ACTIVITY_FINISHING: return "PAUSE_ACTIVITY_FINISHING";
+                      case STOP_ACTIVITY_SHOW: return "STOP_ACTIVITY_SHOW";
+                      case STOP_ACTIVITY_HIDE: return "STOP_ACTIVITY_HIDE";
+                      //省略了 太多了
+                  }
+              }
+              return Integer.toString(code);
+          }
+          
+          
+  		public void handleMessage(Message msg) {
+              if (DEBUG_MESSAGES) Slog.v(TAG, ">>> handling: " + codeToString(msg.what));
+              switch (msg.what) {
+                  case LAUNCH_ACTIVITY: {
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityStart");
+                      final ActivityClientRecord r = (ActivityClientRecord) msg.obj;
+  
+                      r.packageInfo = getPackageInfoNoCheck(
+                              r.activityInfo.applicationInfo, r.compatInfo);
+                      handleRelaunchActivity(r, null, "LAUNCH_ACTIVITY");
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                  } break;
+                  case RELAUNCH_ACTIVITY: {
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityRestart");
+                      ActivityClientRecord r = (ActivityClientRecord)msg.obj;
+                      handleRelaunchActivity(r);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                  } break;
+                  case PAUSE_ACTIVITY: {
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityPause");
+                      SomeArgs args = (SomeArgs) msg.obj;
+                      handlePauseActivity((IBinder) args.arg1, false,
+                              (args.argi1 & USER_LEAVING) != 0, args.argi2,
+                              (args.argi1 & DONT_REPORT) != 0, args.argi3);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                  } break;
+                  case PAUSE_ACTIVITY_FINISHING: {
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityPause");
+                      SomeArgs args = (SomeArgs) msg.obj;
+                      handlePauseActivity((IBinder) args.arg1, true, (args.argi1 & USER_LEAVING) != 0,
+                              args.argi2, (args.argi1 & DONT_REPORT) != 0, args.argi3);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                  } break;
+                  case STOP_ACTIVITY_SHOW: {
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityStop");
+                      SomeArgs args = (SomeArgs) msg.obj;
+                      handleStopActivity((IBinder) args.arg1, true, args.argi2, args.argi3);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                  } break;
+                  case STOP_ACTIVITY_HIDE: {
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityStop");
+                      SomeArgs args = (SomeArgs) msg.obj;
+                      handleStopActivity((IBinder) args.arg1, false, args.argi2, args.argi3);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                  } break;
+                  case SHOW_WINDOW:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityShowWindow");
+                      handleWindowVisibility((IBinder)msg.obj, true);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case HIDE_WINDOW:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityHideWindow");
+                      handleWindowVisibility((IBinder)msg.obj, false);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case RESUME_ACTIVITY:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityResume");
+                      SomeArgs args = (SomeArgs) msg.obj;
+                      handleResumeActivity((IBinder) args.arg1, true, args.argi1 != 0, true,
+                              args.argi3, "RESUME_ACTIVITY");
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case SEND_RESULT:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityDeliverResult");
+                      handleSendResult((ResultData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case DESTROY_ACTIVITY:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityDestroy");
+                      handleDestroyActivity((IBinder)msg.obj, msg.arg1 != 0,
+                              msg.arg2, false);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case BIND_APPLICATION:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "bindApplication");
+                      AppBindData data = (AppBindData)msg.obj;
+                      handleBindApplication(data);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case EXIT_APPLICATION:
+                      if (mInitialApplication != null) {
+                          mInitialApplication.onTerminate();
+                      }
+                      Looper.myLooper().quit();
+                      break;
+                  case NEW_INTENT:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityNewIntent");
+                      handleNewIntent((NewIntentData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case RECEIVER:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "broadcastReceiveComp");
+                      handleReceiver((ReceiverData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case CREATE_SERVICE:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, ("serviceCreate: " + String.valueOf(msg.obj)));
+                      handleCreateService((CreateServiceData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case BIND_SERVICE:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "serviceBind");
+                      handleBindService((BindServiceData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case UNBIND_SERVICE:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "serviceUnbind");
+                      handleUnbindService((BindServiceData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case SERVICE_ARGS:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, ("serviceStart: " + String.valueOf(msg.obj)));
+                      handleServiceArgs((ServiceArgsData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case STOP_SERVICE:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "serviceStop");
+                      handleStopService((IBinder)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case CONFIGURATION_CHANGED:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "configChanged");
+                      mCurDefaultDisplayDpi = ((Configuration)msg.obj).densityDpi;
+                      mUpdatingSystemConfig = true;
+                      try {
+                          handleConfigurationChanged((Configuration) msg.obj, null);
+                      } finally {
+                          mUpdatingSystemConfig = false;
+                      }
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case CLEAN_UP_CONTEXT:
+                      ContextCleanupInfo cci = (ContextCleanupInfo)msg.obj;
+                      cci.context.performFinalCleanup(cci.who, cci.what);
+                      break;
+                  case GC_WHEN_IDLE:
+                      scheduleGcIdler();
+                      break;
+                  case DUMP_SERVICE:
+                      handleDumpService((DumpComponentInfo)msg.obj);
+                      break;
+                  case LOW_MEMORY:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "lowMemory");
+                      handleLowMemory();
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case ACTIVITY_CONFIGURATION_CHANGED:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityConfigChanged");
+                      handleActivityConfigurationChanged((ActivityConfigChangeData) msg.obj,
+                              INVALID_DISPLAY);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case ACTIVITY_MOVED_TO_DISPLAY:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "activityMovedToDisplay");
+                      handleActivityConfigurationChanged((ActivityConfigChangeData) msg.obj,
+                              msg.arg1 /* displayId */);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case PROFILER_CONTROL:
+                      handleProfilerControl(msg.arg1 != 0, (ProfilerInfo)msg.obj, msg.arg2);
+                      break;
+                  case CREATE_BACKUP_AGENT:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "backupCreateAgent");
+                      handleCreateBackupAgent((CreateBackupAgentData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case DESTROY_BACKUP_AGENT:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "backupDestroyAgent");
+                      handleDestroyBackupAgent((CreateBackupAgentData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case SUICIDE:
+                      Process.killProcess(Process.myPid());
+                      break;
+                  case REMOVE_PROVIDER:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "providerRemove");
+                      completeRemoveProvider((ProviderRefCount)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case ENABLE_JIT:
+                      ensureJitEnabled();
+                      break;
+                  case DISPATCH_PACKAGE_BROADCAST:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "broadcastPackage");
+                      handleDispatchPackageBroadcast(msg.arg1, (String[])msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case SCHEDULE_CRASH:
+                      throw new RemoteServiceException((String)msg.obj);
+                  case DUMP_HEAP:
+                      handleDumpHeap((DumpHeapData) msg.obj);
+                      break;
+                  case DUMP_ACTIVITY:
+                      handleDumpActivity((DumpComponentInfo)msg.obj);
+                      break;
+                  case DUMP_PROVIDER:
+                      handleDumpProvider((DumpComponentInfo)msg.obj);
+                      break;
+                  case SLEEPING:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "sleeping");
+                      handleSleeping((IBinder)msg.obj, msg.arg1 != 0);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case SET_CORE_SETTINGS:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "setCoreSettings");
+                      handleSetCoreSettings((Bundle) msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case UPDATE_PACKAGE_COMPATIBILITY_INFO:
+                      handleUpdatePackageCompatibilityInfo((UpdateCompatibilityData)msg.obj);
+                      break;
+                  case TRIM_MEMORY:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "trimMemory");
+                      handleTrimMemory(msg.arg1);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+                  case UNSTABLE_PROVIDER_DIED:
+                      handleUnstableProviderDied((IBinder)msg.obj, false);
+                      break;
+                  case REQUEST_ASSIST_CONTEXT_EXTRAS:
+                      handleRequestAssistContextExtras((RequestAssistContextExtras)msg.obj);
+                      break;
+                  case TRANSLUCENT_CONVERSION_COMPLETE:
+                      handleTranslucentConversionComplete((IBinder)msg.obj, msg.arg1 == 1);
+                      break;
+                  case INSTALL_PROVIDER:
+                      handleInstallProvider((ProviderInfo) msg.obj);
+                      break;
+                  case ON_NEW_ACTIVITY_OPTIONS:
+                      Pair<IBinder, ActivityOptions> pair = (Pair<IBinder, ActivityOptions>) msg.obj;
+                      onNewActivityOptions(pair.first, pair.second);
+                      break;
+                  case ENTER_ANIMATION_COMPLETE:
+                      handleEnterAnimationComplete((IBinder) msg.obj);
+                      break;
+                  case START_BINDER_TRACKING:
+                      handleStartBinderTracking();
+                      break;
+                  case STOP_BINDER_TRACKING_AND_DUMP:
+                      handleStopBinderTrackingAndDump((ParcelFileDescriptor) msg.obj);
+                      break;
+                  case MULTI_WINDOW_MODE_CHANGED:
+                      handleMultiWindowModeChanged((IBinder) ((SomeArgs) msg.obj).arg1,
+                              ((SomeArgs) msg.obj).argi1 == 1,
+                              (Configuration) ((SomeArgs) msg.obj).arg2);
+                      break;
+                  case PICTURE_IN_PICTURE_MODE_CHANGED:
+                      handlePictureInPictureModeChanged((IBinder) ((SomeArgs) msg.obj).arg1,
+                              ((SomeArgs) msg.obj).argi1 == 1,
+                              (Configuration) ((SomeArgs) msg.obj).arg2);
+                      break;
+                  case LOCAL_VOICE_INTERACTION_STARTED:
+                      handleLocalVoiceInteractionStarted((IBinder) ((SomeArgs) msg.obj).arg1,
+                              (IVoiceInteractor) ((SomeArgs) msg.obj).arg2);
+                      break;
+                  case ATTACH_AGENT:
+                      handleAttachAgent((String) msg.obj);
+                      break;
+                  case APPLICATION_INFO_CHANGED:
+                      mUpdatingSystemConfig = true;
+                      try {
+                          handleApplicationInfoChanged((ApplicationInfo) msg.obj);
+                      } finally {
+                          mUpdatingSystemConfig = false;
+                      }
+                      break;
+              }
+              Object obj = msg.obj;
+              if (obj instanceof SomeArgs) {
+                  ((SomeArgs) obj).recycle();
+              }
+              if (DEBUG_MESSAGES) Slog.v(TAG, "<<< done: " + codeToString(msg.what));
+          }
+      }
+  ```
+
+* 从上图可以看到ActivityThread中存在一个内部类H，里面定义了很多Message消息，如Activity、Service、Application等的创建、销毁等。由此可以知道Activity、Service、Applicaiton等创建、销毁都是由ActivityThread来操控的。ActivityThread就相当于一个领导，管理者下面很多的员工（Activity等）
+
+#### 3.3 关联
+
+**3.3.1 Application关联**
+
+* 由上面的handlerMessage()方法，我么可以找到BIND_APPLICATION，这个就是和Application关联的case。里面的方法就是handleBindApplication()。所以我们一起看下handleBindApplication()这个方法
+
+* 核心代码（太多了，有删减）
+
+* ```java
+     // ActivityThread.java
+     private void handleBindApplication(AppBindData data) { 
+        ......//太多了 省略了
+        try {
+              // If the app is being launched for full backup or restore, bring it up in
+              // a restricted environment with the base application class.
+              Application app = data.info.makeApplication(data.restrictedBackupMode, null);
+              mInitialApplication = app;
+              ......//太多了 省略了
+          } finally {
+              // If the app targets < O-MR1, or doesn't change the thread policy
+              // during startup, clobber the policy to maintain behavior of b/36951662
+              if (data.appInfo.targetSdkVersion <= Build.VERSION_CODES.O
+                      || StrictMode.getThreadPolicy().equals(writesAllowedPolicy)) {
+                  StrictMode.setThreadPolicy(savedPolicy);
+              }
+          }
+     }
+  
+  
+     // LoadedApk.java
+     public Application makeApplication(boolean forceDefaultAppClass,
+              Instrumentation instrumentation) {
+          if (mApplication != null) {
+              return mApplication;
+          }
+  
+          Application app = null;
+  
+          String appClass = mApplicationInfo.className;
+          if (forceDefaultAppClass || (appClass == null)) {
+              appClass = "android.app.Application";
+          }
+  
+          try {
+               java.lang.ClassLoader cl = getClassLoader();
+              if (!mPackageName.equals("android")) {
+                  Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                          "initializeJavaContextClassLoader");
+                  initializeJavaContextClassLoader();
+                  Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+              }
+              ContextImpl appContext = ContextImpl.createAppContext(mActivityThread, this); // 创建ContextImpl实例
+              app = mActivityThread.mInstrumentation.newApplication(
+                      cl, appClass, appContext);
+              appContext.setOuterContext(app);// 将Application实例传递给Context实例
+          } catch (Exception e) {
+              ...
+          }
+          mActivityThread.mAllApplications.add(app);
+          mApplication = app;
+  
+          return app;
+      }
+  ```
+
+* 对于应用程序只有一个进程而言，都会首先创建Application对线。
+
+**3.3.2 Activity关联**
 
