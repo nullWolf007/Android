@@ -584,8 +584,6 @@
           }
           ...
        }
-    ```
-
 
       private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) {
           ...    
@@ -625,13 +623,7 @@
                   if (theme != 0) {
                       activity.setTheme(theme);
                   }
-
-  
-
-
-
-
-
+    
               mActivities.put(r.token, r);
       
           } catch (SuperNotCalledException e) {
@@ -643,12 +635,6 @@
       
           return activity;
       }
-
-  
-
-
-
-
 
       private Context createBaseContextForActivity(ActivityClientRecord r,
               final Activity activity) {
@@ -674,4 +660,59 @@
           }
           return baseContext;
       }
+    ```
+    
 * 通过startActivity()或startActivityForResult()请求启动一个Activity时，如果系统检测需要新建一个Activity对象时，就会回调handleLaunchActivity()方法，该方法继而调用performLaunchActivity()方法，去创建一个Activity实例，并且回调onCreate()，onStart()方法等，函数位于 ActivityThread.java类。
+
+**3.3.3 Service的关联**
+
+```java
+    private void handleCreateService(CreateServiceData data) {
+        // If we are getting ready to gc after going to the background, well
+        // we are back active so skip it.
+        unscheduleGcIdler();
+
+        LoadedApk packageInfo = getPackageInfoNoCheck(
+                data.info.applicationInfo, data.compatInfo);
+        Service service = null;
+        try {
+            java.lang.ClassLoader cl = packageInfo.getClassLoader();
+            service = (Service) cl.loadClass(data.info.name).newInstance();
+        } catch (Exception e) {
+            if (!mInstrumentation.onException(service, e)) {
+                throw new RuntimeException(
+                    "Unable to instantiate service " + data.info.name
+                    + ": " + e.toString(), e);
+            }
+        }
+
+        try {
+            if (localLOGV) Slog.v(TAG, "Creating service " + data.info.name);
+
+            ContextImpl context = new ContextImpl(); // 创建ContextImpl实例
+            context.init(packageInfo, null, this);
+
+            Application app = packageInfo.makeApplication(false, mInstrumentation);
+            context.setOuterContext(service);
+            service.attach(context, this, data.info.name, data.token, app,
+                    ActivityManagerNative.getDefault());
+            service.onCreate();
+            mServices.put(data.token, service);
+            try {
+                ActivityManagerNative.getDefault().serviceDoneExecuting(
+                        data.token, 0, 0, 0);
+            } catch (RemoteException e) {
+                // nothing to do.
+            }
+        } catch (Exception e) {
+            if (!mInstrumentation.onException(service, e)) {
+                throw new RuntimeException(
+                    "Unable to create service " + data.info.name
+                    + ": " + e.toString(), e);
+            }
+        }
+    }
+```
+
+* 通过startService或者bindService时，如果系统检测到需要新创建一个Service实例，就会回调handleCreateService()方法，完成相关数据操作。handleCreateService()函数位于ActivityThread.java类
+

@@ -186,6 +186,25 @@ public class ContextWrapper extends Context {
 ### 4.1ActivityThread
 
 * 我们常常会误认为Android程序的入口是Application的onCreate()方法，其实这是错误的想法。其实Android程序的入口是ActivityThread的main的方法
+* 查看ActivityThread详细内容请点击#[ActivityThread深入理解及源码解析
 
-* 查看ActivityThread详细内容请点击[ActivityThread深入理解及源码解析](https://github.com/nullWolf007/Android/blob/master/%E8%BF%9B%E9%98%B6/%E5%90%AF%E5%8A%A8%E7%9B%B8%E5%85%B3(Context%EF%BC%8C%E8%B7%A8%E8%BF%9B%E7%A8%8B%E7%AD%89)/ActivityThread%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%8F%8A%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90.md)
+## 五、Context资源详解
+
+### 5.1 疑问
+
+* 为什么都是Context，但是不同的会有不同的功能，比如Activity就有showDialog的功能，而其他的如Service等就不能showDialog。难道说这些拥有不同的Context？
+
+### 5.2 Context对象的区别和用法
+
+![Context对象的区别和用法](https://github.com/nullWolf007/images/raw/master/android/%E8%BF%9B%E9%98%B6/Context%E8%B5%84%E6%BA%90%E5%8C%BA%E5%88%AB.png)
+
+* 上面的表格说明了，不同的Context拥有自己不同的的功能。可以看到Activity拥有最多的功能。所以人会理所当然的认为这些使用的不是同一块资源。但是实际上他们使用的是同一块资源。
+
+### 5.3 源码分析
+
+#### 5.3.1 init方法
+
+
+
+
 
