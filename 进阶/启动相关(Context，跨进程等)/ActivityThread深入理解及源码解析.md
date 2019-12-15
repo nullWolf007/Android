@@ -504,7 +504,7 @@
 
 **3.3.1 Application关联**
 
-* 由上面的handlerMessage()方法，我么可以找到BIND_APPLICATION，这个就是和Application关联的case。里面的方法就是handleBindApplication()。所以我们一起看下handleBindApplication()这个方法
+* 由上面的handlerMessage()方法，我们可以找到BIND_APPLICATION，这个就是和Application关联的case。里面的方法就是handleBindApplication()。所以我们一起看下handleBindApplication()这个方法
 
 * 核心代码（太多了，有删减）
 
@@ -527,22 +527,21 @@
               }
           }
      }
-  
-  
+
      // LoadedApk.java
      public Application makeApplication(boolean forceDefaultAppClass,
               Instrumentation instrumentation) {
           if (mApplication != null) {
               return mApplication;
           }
-  
+      
           Application app = null;
-  
+      
           String appClass = mApplicationInfo.className;
           if (forceDefaultAppClass || (appClass == null)) {
               appClass = "android.app.Application";
           }
-  
+      
           try {
                java.lang.ClassLoader cl = getClassLoader();
               if (!mPackageName.equals("android")) {
@@ -560,12 +559,119 @@
           }
           mActivityThread.mAllApplications.add(app);
           mApplication = app;
-  
+      
           return app;
       }
   ```
 
-* 对于应用程序只有一个进程而言，都会首先创建Application对线。
+* 对于应用程序只有一个进程而言，都会首先创建Application对象。
 
 **3.3.2 Activity关联**
 
+* 我们同样也可以找到handleLaunchActivity()方法
+
+* ```java
+        private void handleLaunchActivity(ActivityClientRecord r, Intent customIntent) {
+          ...
+          Activity a = performLaunchActivity(r, customIntent); // 到下一步
+    
+          if (a != null) {
+              r.createdConfig = new Configuration(mConfiguration);
+              Bundle oldState = r.state;
+              handleResumeActivity(r.token, false, r.isForward,
+                      !r.activity.mFinished && !r.startsNotResumed);
+              ...
+          }
+          ...
+       }
+    ```
+
+
+      private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) {
+          ...    
+          Activity activity = null;
+          try {
+              java.lang.ClassLoader cl = r.packageInfo.getClassLoader();
+              activity = mInstrumentation.newActivity(
+                      cl, component.getClassName(), r.intent);
+              StrictMode.incrementExpectedActivityCount(activity.getClass());
+              r.intent.setExtrasClassLoader(cl);
+              if (r.state != null) {
+                  r.state.setClassLoader(cl);
+              }
+          } catch (Exception e) {
+              ...
+          }
+      
+          try {
+              Application app = r.packageInfo.makeApplication(false, mInstrumentation);
+      
+              if (activity != null) {
+                  Context appContext = createBaseContextForActivity(r, activity); // 创建Context
+                  CharSequence title = r.activityInfo.loadLabel(appContext.getPackageManager());
+                  Configuration config = new Configuration(mCompatConfiguration);
+                  if (DEBUG_CONFIGURATION) Slog.v(TAG, "Launching activity "
+                          + r.activityInfo.name + " with config " + config);
+                  activity.attach(appContext, this, getInstrumentation(), r.token,
+                          r.ident, app, r.intent, r.activityInfo, title, r.parent,
+                          r.embeddedID, r.lastNonConfigurationInstances, config);
+      
+                  if (customIntent != null) {
+                      activity.mIntent = customIntent;
+                  }
+                  r.lastNonConfigurationInstances = null;
+                  activity.mStartedActivity = false;
+                  int theme = r.activityInfo.getThemeResource();
+                  if (theme != 0) {
+                      activity.setTheme(theme);
+                  }
+
+  
+
+
+
+
+
+              mActivities.put(r.token, r);
+      
+          } catch (SuperNotCalledException e) {
+              ...
+      
+          } catch (Exception e) {
+              ...
+          }
+      
+          return activity;
+      }
+
+  
+
+
+
+
+
+      private Context createBaseContextForActivity(ActivityClientRecord r,
+              final Activity activity) {
+          ContextImpl appContext = new ContextImpl();  // 创建ContextImpl实例
+          appContext.init(r.packageInfo, r.token, this);
+          appContext.setOuterContext(activity);
+      
+          // For debugging purposes, if the activity's package name contains the value of
+          // the "debug.use-second-display" system property as a substring, then show
+          // its content on a secondary display if there is one.
+          Context baseContext = appContext;
+          String pkgName = SystemProperties.get("debug.second-display.pkg");
+          if (pkgName != null && !pkgName.isEmpty()
+                  && r.packageInfo.mPackageName.contains(pkgName)) {
+              DisplayManagerGlobal dm = DisplayManagerGlobal.getInstance();
+              for (int displayId : dm.getDisplayIds()) {
+                  if (displayId != Display.DEFAULT_DISPLAY) {
+                      Display display = dm.getRealDisplay(displayId);
+                      baseContext = appContext.createDisplayContext(display);
+                      break;
+                  }
+              }
+          }
+          return baseContext;
+      }
+* 通过startActivity()或startActivityForResult()请求启动一个Activity时，如果系统检测需要新建一个Activity对象时，就会回调handleLaunchActivity()方法，该方法继而调用performLaunchActivity()方法，去创建一个Activity实例，并且回调onCreate()，onStart()方法等，函数位于 ActivityThread.java类。
