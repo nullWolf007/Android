@@ -36,7 +36,7 @@
     - [ 4.1 说明](#41-说明)
     - [ 4.1 Messenger实例](#41-Messenger实例)
     - [ AIDL示例了解Binder](#AIDL示例了解Binder)
-  - [ Android中的IPC方式](#Android中的IPC方式)
+  - [ 五、ContentProvider](#五ContentProvider)
   <!-- /TOC -->
 # Android跨进程IPC之Binde和AIDL
 
@@ -243,168 +243,17 @@
 
 ### 4.1 Messenger实例
 
+* 服务端进程：创建一个Service来处理客户端的连接请求；创建一个Handler并通过它来创建一个Messenger对象；在Service的onBind中返回这个Messenger对象底层的Binder即可。在清单文件注册一下。
+
+* 客户端进程：首先绑定服务端的Service；绑定成功后用服务端返回的IBinder对象创建一个Messager，通过这个Messenger就可以向服务器发送消息了，发送类型必须为Message对象； 如果需要服务端能够回应客户端，在客户端需要创建一个Handler并创建一个新的Messenger，并把这个Messenger对象通过Message的replyTo参数传递给服务端，服务端通过这个replayTo参数就可以回应客户端
+
+* 查看实例代码请点击 [IPC之Messenger的demo核心代码](https://github.com/nullWolf007/ToolProject/tree/master/IPC之Messenger的demo核心代码) 
+
+## 五、ContentProvider
+
+* 查看详情请点击[Sqlite和ContentProvider的结合使用](https://github.com/nullWolf007/Android/blob/master/%E8%BF%9B%E9%98%B6/Sqlite%E5%92%8CContentProvider.md)
 
 
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-### AIDL示例了解Binder
-
-5. linkToDeath和unlinkToDeath死亡代理
-
-## Android中的IPC方式
-
-1. 使用Bundle
-
-2. 使用文件共享：保存成文件，高并发都会存在问题；SharedPreferences实际就是保存成xml文件，除存在高并发问题，在多进程模式下也不可靠。
-
-3. 使用Messenger(底层使用的AIDL)
-
-   * 一次处理一个请求，串行的处理方式，因此在服务端不用考虑线程同步问题
-
-   * 使用步骤：
-
-     * 服务端进程：创建一个Service来处理客户端的连接请求；创建一个Handler并通过它来创建一个Messenger对象；在Service的onBind中返回这个Messenger对象底层的Binder即可。在清单文件注册一下。
-
-       ```java
-       public class MessengerService extends Service {
-       
-           private static class MessengerHandler extends Handler {
-               @Override
-               public void handleMessage(Message msg) {
-                   switch (msg.what) {
-                       case 1:
-                           Log.e("service", "handleMessage: " + msg.getData().getString("msg"));
-                           Messenger clientMsg = msg.replyTo;
-                           Message replayMessage = Message.obtain(null,2);
-                           Bundle bundle = new Bundle();
-                           bundle.putString("reply","我已经收到你的消息，稍后回复你");
-                           replayMessage.setData(bundle);
-                           try {
-                               clientMsg.send(replayMessage);
-                           } catch (RemoteException e) {
-                               e.printStackTrace();
-                           }
-                           break;
-                       default:
-                           super.handleMessage(msg);
-                   }
-               }
-           }
-       
-           private final Messenger messenger = new Messenger(new MessengerHandler());
-       
-           @Nullable
-           @Override
-           public IBinder onBind(Intent intent) {
-               return messenger.getBinder();
-           }
-       }
-       
-       ```
-
-       
-
-     * 客户端进程：首先绑定服务端的Service；绑定成功后用服务端返回的IBinder对象创建一个Messager，通过这个Messenger就可以向服务器发送消息了，发送类型必须为Message对象； 如果需要服务端能够回应客户端，在客户端需要创建一个Handler并创建一个新的Messenger，并把这个Messenger对象通过Message的replyTo参数传递给服务端，服务端通过这个replayTo参数就可以回应客户端
-
-       ```java
-       public class MainActivity extends AppCompatActivity {
-       
-           private Messenger messenger;
-       
-           private static class MessengerHandler extends Handler {
-               @Override
-               public void handleMessage(Message msg) {
-                   switch (msg.what) {
-                       case 2:
-                           Log.e("client", "handleMessage: " + msg.getData().getString("reply"));
-                           break;
-                       default:
-                           super.handleMessage(msg);
-                   }
-               }
-           }
-       
-           private Messenger getReplayMessenger = new Messenger(new MessengerHandler());
-       
-           private ServiceConnection serviceConnection = new ServiceConnection() {
-               @Override
-               public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                   messenger = new Messenger(iBinder);
-                   Message msg = Message.obtain(null, 1);
-                   Bundle bundle = new Bundle();
-                   bundle.putString("msg", "hello,this is a client");
-                   msg.setData(bundle);
-       
-                   //回馈
-                   msg.replyTo = getReplayMessenger;
-       
-                   try {
-                       messenger.send(msg);
-                   } catch (RemoteException e) {
-                       e.printStackTrace();
-                   }
-               }
-       
-               @Override
-               public void onServiceDisconnected(ComponentName componentName) {
-       
-               }
-           };
-       
-           @Override
-           protected void onCreate(Bundle savedInstanceState) {
-               super.onCreate(savedInstanceState);
-               setContentView(R.layout.activity_main);
-               Intent intent = new Intent(this, MessengerService.class);
-               bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-           }
-       
-           @Override
-           protected void onDestroy() {
-               unbindService(serviceConnection);
-               super.onDestroy();
-           }
-       }
-       ```
-
-     
-
-4. 使用AIDL
-
-   * 服务端：创建一个Service用来监听客户端的连接请求，然后创建一个AIDL文件，将暴露给客户端的接口在AIDL文件中声明，最后在Service中实现这个AIDL接口。
-
-   * 客户端：绑定服务器的Service，绑定成功后，将服务端返回的Binder对象转成AIDL接口所属的类型，接着就可以调用AIDL中方法。
-
-   * AIDL接口的创建：AIDL的包结构在服务端和客户端要保持一致
-
-     ```java
-     package com.example.inspeeding_yf006.learn.bean;
-     
-     import com.example.inspeeding_yf006.learn.bean.BookBean;
-     
-     interface IBookManager {
-         List<BookBean> getBookList();
-         void addBook(in BookBean bookBean);
-     }
-     ```
-
-   * 远程服务端Service的实现：
-   
-   * 客户端的实现
-   
-   * P73
 
 
 ​     
