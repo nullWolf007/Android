@@ -1,5 +1,15 @@
 [TOC]
-
+- <!-- TOC -->
+- [ ActivityThread深入理解及源码解析](#ActivityThread深入理解及源码解析)
+  - [ 参考链接](#参考链接)
+  - [ 一、ActivityThread关联图](#一ActivityThread关联图)
+  - [ 二、ActivityThread的main方法](#二ActivityThread的main方法)
+    - [ 2.1源码](#21源码)
+  - [ 三、ActivityThread关联时机](#三ActivityThread关联时机)
+    - [ 3.1 APP的启动过程](#31-APP的启动过程)
+    - [ 3.2 ActivityThread中的handlerMessage](#32-ActivityThread中的handlerMessage)
+    - [ 3.3 关联](#33-关联)
+  <!-- /TOC -->
 # ActivityThread深入理解及源码解析
 
 ### 参考链接

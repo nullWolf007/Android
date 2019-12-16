@@ -1,4 +1,25 @@
 [TOC]
+- <!-- TOC -->
+- [ Context深入理解及源码解析](#Context深入理解及源码解析)
+  - [ 参考链接](#参考链接)
+  - [ 一、官方解释](#一官方解释)
+  - [ 二、继承关系](#二继承关系)
+  - [ 三、源码解析](#三源码解析)
+    - [ 3.1Context源码解析](#31Context源码解析)
+    - [ 3.2 ContextWrapper源码解析](#32-ContextWrapper源码解析)
+    - [ 3.3 ContextImpl源码解析](#33-ContextImpl源码解析)
+  - [ 四、关联时机](#四关联时机)
+    - [ 4.1ActivityThread](#41ActivityThread)
+  - [ 五、Context资源详解](#五Context资源详解)
+    - [ 5.1 疑问](#51-疑问)
+    - [ 5.2 Context对象的区别和用法](#52-Context对象的区别和用法)
+    - [ 5.3 源码分析](#53-源码分析)
+      - [ 5.3.1 init方法](#531-init方法)
+      - [ 5.3.2 getResouces方法](#532-getResouces方法)
+      - [ 5.3.3 getTopLevelResouces方法](#533-getTopLevelResouces方法)
+      - [ 5.3.4 结论](#534-结论)
+  <!-- /TOC -->
+[TOC]
 
 # Context深入理解及源码解析
 
@@ -198,13 +219,111 @@ public class ContextWrapper extends Context {
 
 ![Context对象的区别和用法](https://github.com/nullWolf007/images/raw/master/android/%E8%BF%9B%E9%98%B6/Context%E8%B5%84%E6%BA%90%E5%8C%BA%E5%88%AB.png)
 
-* 上面的表格说明了，不同的Context拥有自己不同的的功能。可以看到Activity拥有最多的功能。所以人会理所当然的认为这些使用的不是同一块资源。但是实际上他们使用的是同一块资源。
+* 上面的表格说明了，不同的Context拥有自己不同的的功能。可以看到Activity拥有最多的功能。所以人会理所当然的认为这些使用的不是同一块资源。但是实际上他们使用的是同一块资源。我们通过源码去发现其中的原因。
 
 ### 5.3 源码分析
 
 #### 5.3.1 init方法
 
+```java
+final void init(LoadedApk packageInfo,  
+            IBinder activityToken, ActivityThread mainThread,  
+            Resources container) {  
+    mPackageInfo = packageInfo;  
+    mResources = mPackageInfo.getResources(mainThread);  
+  
+    if (mResources != null && container != null  
+            && container.getCompatibilityInfo().applicationScale !=  
+                    mResources.getCompatibilityInfo().applicationScale) {  
+        if (DEBUG) {  
+            Log.d(TAG, "loaded context has different scaling. Using container's" +  
+                    " compatiblity info:" + container.getDisplayMetrics());  
+        }  
+        mResources = mainThread.getTopLevelResources(  
+                mPackageInfo.getResDir(), container.getCompatibilityInfo().copy());  
+    }  
+    mMainThread = mainThread;  
+    mContentResolver = new ApplicationContentResolver(this, mainThread);  
+  
+    setActivityToken(activityToken);  
+} 
+```
 
+* 通过上面的代码，我们能找到是通过getResources()方法去获取到的资源
+
+#### 5.3.2 getResouces方法
+
+```java
+public Resources getResources(ActivityThread mainThread) {  
+    if (mResources == null) {  
+        mResources = mainThread.getTopLevelResources(mResDir, this);  
+    }  
+    return mResources;  
+} 
+```
+
+* 这里又调用了getTopLevelResouces方法
+
+#### 5.3.3 getTopLevelResouces方法
+
+```java
+Resources getTopLevelResources(String resDir, CompatibilityInfo compInfo) {  
+    ResourcesKey key = new ResourcesKey(resDir, compInfo.applicationScale);  
+    Resources r;  
+    synchronized (mPackages) {  
+        // Resources is app scale dependent.  
+        if (false) {  
+            Slog.w(TAG, "getTopLevelResources: " + resDir + " / "  
+                    + compInfo.applicationScale);  
+        }  
+        WeakReference<Resources> wr = mActiveResources.get(key);  
+        r = wr != null ? wr.get() : null;  
+          
+        if (r != null && r.getAssets().isUpToDate()) {  
+            if (false) {  
+                Slog.w(TAG, "Returning cached resources " + r + " " + resDir  
+                        + ": appScale=" + r.getCompatibilityInfo().applicationScale);  
+            }  
+            return r;  
+        }  
+    }  
+  
+    AssetManager assets = new AssetManager();  
+    if (assets.addAssetPath(resDir) == 0) {  
+        return null;  
+    }  
+  
+    DisplayMetrics metrics = getDisplayMetricsLocked(false);  
+    r = new Resources(assets, metrics, getConfiguration(), compInfo);  
+    if (false) {  
+        Slog.i(TAG, "Created app resources " + resDir + " " + r + ": "  
+                + r.getConfiguration() + " appScale="  
+                + r.getCompatibilityInfo().applicationScale);  
+    }  
+      
+    synchronized (mPackages) {  
+        WeakReference<Resources> wr = mActiveResources.get(key);  
+        Resources existing = wr != null ? wr.get() : null;  
+        if (existing != null && existing.getAssets().isUpToDate()) {  
+            // Someone else already created the resources while we were  
+            // unlocked; go ahead and use theirs.  
+            r.getAssets().close();  
+            return existing;  
+        }  
+        // XXX need to remove entries when weak references go away  
+        mActiveResources.put(key, new WeakReference<Resources>(r));  
+        return r;  
+    }  
+}  
+```
+
+* mActiveResources对象内部保存了该应用程序所使用到的所有Resources对象，其类型为WeakReference，所以内存紧张时，可以释放Resouces占用的资源。
+
+#### 5.3.4 结论
+
+* 当ActivityThread类中创建Application、Service、Activity的同时，完成了与ContextImpl的关联绑定，通过ContextImpl类中init方法，获得了一个唯一的**Resources**对象，根据上述代码中资源的请求机制，再加上ResourcesManager采用单例模式，这样就保证了不同的ContextImpl访问的是同一套资源。
+* **Application、Service、Activity，它们本身对Resources资源处理方法的不同，造成了这个Resoucres最后表现出来的不一样**
+* 通俗的来说就是，拿到的是同一个东西，但是不同的人用法会不一样
 
 
 
