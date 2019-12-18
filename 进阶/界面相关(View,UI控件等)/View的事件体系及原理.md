@@ -35,6 +35,10 @@
   <!-- /TOC -->
 # View的事件体系及原理
 
+### 参考链接
+
+* [**Android开发艺术探索**](https://book.douban.com/subject/26599538/)
+
 ## 一、基础知识
 
 ### 1.1 View的位置参数
