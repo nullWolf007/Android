@@ -1,3 +1,29 @@
+[TOC]
+- <!-- TOC -->
+- [ RemoteViews解析](#RemoteViews解析)
+  - [ 参考链接](#参考链接)
+  - [ 一、RemoteViews的应用](#一RemoteViews的应用)
+    - [ 1.1 前言](#11-前言)
+    - [ 1.2 RemoteViews在通知栏的应用](#12-RemoteViews在通知栏的应用)
+    - [ 1.3 RemoteViews在桌面小部件的应用](#13-RemoteViews在桌面小部件的应用)
+      - [ 1.3.1 主要步骤](#131-主要步骤)
+      - [ 1.3.2 AppWidgetProvider的常用方法](#132-AppWidgetProvider的常用方法)
+      - [ 1.3.3 实例代码](#133-实例代码)
+  - [ 二、RemoteViews的内部机制](#二RemoteViews的内部机制)
+    - [ 2.1 RemoteViews支持的View类型](#21-RemoteViews支持的View类型)
+    - [ 2.2 RemoteViews常用的方法](#22-RemoteViews常用的方法)
+    - [ 2.3 整体通信流程](#23-整体通信流程)
+    - [ 2.4 源码解析](#24-源码解析)
+      - [ 2.4.1 setTextViewText](#241-setTextViewText)
+      - [ 2.4.2 setCharSequence](#242-setCharSequence)
+      - [ 2.4.3 addAction](#243-addAction)
+      - [ 2.4.4 apply(Remoteviews)](#244-applyRemoteviews)
+      - [ 2.4.5 performApply](#245-performApply)
+      - [ 2.4.6 apply(Action的子类ReflectionAction)](#246-applyAction的子类ReflectionAction)
+      - [ 2.4.7 总结](#247-总结)
+    - [ 2.5 说明](#25-说明)
+      - [ 2.5.1 ListView和StackView](#251-ListView和StackView)
+  <!-- /TOC -->
 # RemoteViews解析
 
 ### 参考链接
@@ -77,4 +103,151 @@
 ![**RemoteViews内部机制**](https://github.com/nullWolf007/images/raw/master/android/%E8%BF%9B%E9%98%B6/%E7%95%8C%E9%9D%A2%E7%9B%B8%E5%85%B3/RemoteViews%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6.png)
 
 ### 2.4 源码解析
+
+#### 2.4.1 setTextViewText
+
+```java
+    public void setTextViewText(int viewId, CharSequence text) {
+        setCharSequence(viewId, "setText", text);
+    }
+```
+
+#### 2.4.2 setCharSequence
+
+```java
+    public void setCharSequence(int viewId, String methodName, CharSequence value) {
+        addAction(new ReflectionAction(viewId, methodName, ReflectionAction.CHAR_SEQUENCE, value));
+    }
+```
+
+* 从ReflectionAction这个名称，我们就能了解到这是一个反射类型的动作
+
+#### 2.4.3 addAction
+
+```java
+    private void addAction(Action a) {
+        if (hasLandscapeAndPortraitLayouts()) {
+            throw new RuntimeException("RemoteViews specifying separate landscape and portrait" +
+                    " layouts cannot be modified. Instead, fully configure the landscape and" +
+                    " portrait layouts individually before constructing the combined layout.");
+        }
+        if (mActions == null) {
+            mActions = new ArrayList<Action>();
+        }
+        mActions.add(a);
+
+        // update the memory usage stats
+        a.updateMemoryUsageEstimate(mMemoryUsageCounter);
+    }
+```
+
+* 从上面的代码，可以知道RemoteViews内部有一个mActions成员，是一个ArrayList，外界每调用一次set方法，RemoteViews就会创建一个Action对象并加入到这个ArrayList中。这里仅仅把Action对象保存起来，并未对View进行实际的操作。跟随代码，我们需要了解ReflectionAction，但是在此之前，先看下RemoteViews的apply方法
+
+#### 2.4.4 apply(Remoteviews)
+
+```java
+    public View apply(Context context, ViewGroup parent, OnClickHandler handler) {
+        RemoteViews rvToApply = getRemoteViewsToApply(context);
+
+        View result = inflateView(context, rvToApply, parent);
+        loadTransitionOverride(context, handler);
+
+        rvToApply.performApply(result, parent, handler);
+
+        return result;
+    }
+
+    private View inflateView(Context context, RemoteViews rv, ViewGroup parent) {
+        // RemoteViews may be built by an application installed in another
+        // user. So build a context that loads resources from that user but
+        // still returns the current users userId so settings like data / time formats
+        // are loaded without requiring cross user persmissions.
+        final Context contextForResources = getContextForResources(context);
+        Context inflationContext = new RemoteViewsContextWrapper(context, contextForResources);
+
+        LayoutInflater inflater = (LayoutInflater)
+                context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        // Clone inflater so we load resources from correct context and
+        // we don't add a filter to the static version returned by getSystemService.
+        inflater = inflater.cloneInContext(inflationContext);
+        inflater.setFilter(this);
+        View v = inflater.inflate(rv.getLayoutId(), parent, false);
+        v.setTagInternal(R.id.widget_frame, rv.getLayoutId());
+        return v;
+    }
+
+    private static void loadTransitionOverride(Context context,
+            RemoteViews.OnClickHandler handler) {
+        if (handler != null && context.getResources().getBoolean(
+                com.android.internal.R.bool.config_overrideRemoteViewsActivityTransition)) {
+            TypedArray windowStyle = context.getTheme().obtainStyledAttributes(
+                    com.android.internal.R.styleable.Window);
+            int windowAnimations = windowStyle.getResourceId(
+                    com.android.internal.R.styleable.Window_windowAnimationStyle, 0);
+            TypedArray windowAnimationStyle = context.obtainStyledAttributes(
+                    windowAnimations, com.android.internal.R.styleable.WindowAnimation);
+            handler.setEnterAnimationId(windowAnimationStyle.getResourceId(
+                    com.android.internal.R.styleable.
+                            WindowAnimation_activityOpenRemoteViewsEnterAnimation, 0));
+            windowStyle.recycle();
+            windowAnimationStyle.recycle();
+        }
+    }
+```
+
+* 从上述代码可以看到，通过LayoutInflater去加载RemoteViews的布局文件。通过getLayoutId()方法获取布局文件。然后使用performApply方法去进行更新操作
+
+#### 2.4.5 performApply
+
+```java
+    private void performApply(View v, ViewGroup parent, OnClickHandler handler) {
+        if (mActions != null) {
+            handler = handler == null ? DEFAULT_ON_CLICK_HANDLER : handler;
+            final int count = mActions.size();
+            for (int i = 0; i < count; i++) {
+                Action a = mActions.get(i);
+                a.apply(v, parent, handler);
+            }
+        }
+    }
+```
+
+* 遍历之前放入的action集合mActions，然后去调用Action对象的apply方法
+
+#### 2.4.6 apply(Action的子类ReflectionAction)
+
+```java
+        @Override
+        public void apply(View root, ViewGroup rootParent, OnClickHandler handler) {
+            final View view = root.findViewById(viewId);
+            if (view == null) return;
+
+            Class<?> param = getParameterType();
+            if (param == null) {
+                throw new ActionException("bad type: " + this.type);
+            }
+
+            try {
+                getMethod(view, this.methodName, param).invoke(view, wrapArg(this.value));
+            } catch (ActionException e) {
+                throw e;
+            } catch (Exception ex) {
+                throw new ActionException(ex);
+            }
+        }
+```
+
+* 从上述代码可以知道，ReflectionAction表示的是一个反射动作，通过它对View的操作会以反射的方式来调用，其中getMethod就是根据方法名来得到反射所需的Method对象。
+
+#### 2.4.7 总结
+
+* 这里是以setTextViewText举例的，其他方法大致上和这个类似，就不一一说明了，主要就是把操作放入mActions集合中，最后一块从集合中取出来，通过ReflectionAction反射的机制，对View进行更新。
+* 也有一些方法不通过反射去完成的。
+
+### 2.5 说明
+
+#### 2.5.1 ListView和StackView
+
+* 对于ListView和StackView，如果需要给item添加点击事件，则必须将setPendingIntentTemplate和setOnClickFillInIntent组合使用才可以
 
