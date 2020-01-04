@@ -1,30 +1,189 @@
-# RxJava2
+[TOC]
 
-## 一、定义
+# RxJava2教程
 
-- RxJava是一个基于事件流、实现异步操作的库
+### 参考文章
 
-## 二、作用
+* [**这可能是最好的RxJava 2.x 教程（完结版）**](https://www.jianshu.com/p/0cd258eecf60)
+* [**RxJava2 系列 -1：一篇的比较全面的 RxJava2 方法总结**](https://www.jianshu.com/p/823252f110b0)
+* [RxJava官方wiki](https://github.com/ReactiveX/RxJava/wiki/)
 
-- 实现异步操作
+## 一、前言
 
-## 三、特点
+### 1.1 简介
 
-- 基于事件流的脸识调用
+* RxJava是一个在Java VM上使用可观测的序列来组成**异步**的、基于事件的程序的库。
+
+### 1.2 RxJava和AsyncTask区别
+
+* 在Android中，我们可以使用AsyncTask来完成异步任务操作，但是当任务的梳理比较多的时候，我们要为每个任务定义一个AsyncTask就变得非常繁琐。 RxJava能帮助我们在实现异步执行的前提下保持代码的清晰。
+  它的原理就是创建一个`Observable`来完成异步任务，组合使用各种不同的链式操作，来实现各种复杂的操作，最终将任务的执行结果发射给`Observer`进行处理。
+
+### 1.3 特点
+
 - 简洁、简单、优雅
+- 比Handler,AsyncTask灵活
 
-## 四、RxJava原理
+## 二、解析
 
-|         角色         |            作用             |
-| :------------------: | :-------------------------: |
-| 被观察者(Observable) |          产生事件           |
-|   观察者(Observer)   |  接收事件，并给出响应动作   |
-|   订阅(Subscribe)    |    连接 被观察者和观察者    |
-|     事件(Event)      | 被观察者和观察者 沟通的载体 |
+### 2.1 常用基础类
 
-## 五、基本使用
+#### 2.1.1 Observable
 
-### 步骤1：创建被观察者和生产事件
+* 被观察者：产生事件
+
+* 多个流，无背压
+
+#### 2.1.2 Flowable
+
+* 被观察者：产生事件
+
+* 多个流，响应式流和背压
+
+#### 2.1.3 Event
+
+* 事件：观察者，被观察者 沟通的载体
+
+#### 2.1.4 Observer
+
+* 观察者：接收事件
+
+#### 2.1.5 Subscriber
+
+* 观察者：接收事件
+
+#### 2.1.6 Subscribe
+
+* 订阅：连接 被观察者和观察者
+
+#### 2.1.7 Disposable
+
+* isDisposed()：该方法用来判断否停止了观察指定的流
+* dispose()：该方法用来放弃观察指定的流
+* 一般在Activity的onDestory中需要调用dispose方法，防止内存泄漏
+
+#### 2.1.8 Single
+
+* 只有一个元素或者错误的流
+
+#### 2.1.9 Completable
+
+* 没有任何元素，只有一个完成和错误信号的流
+
+#### 2.1.10 Maybe
+
+* 没有任何元素或者只有一个元素或者只有一个错误的流
+
+### 2.2 背压(backpressure)
+
+#### 2.2.1 含义
+
+* 背压是流速控制的一种策略
+* 背压是指在异步场景中，被观察者发送事件速度远快于观察者的处理速度的情况下，一种告诉上游的被观察者降低发送速度的策略。
+
+### 2.3 两种观察者模式图解
+
+![**RxJava两种观察者模式**](https://github.com/nullWolf007/images/raw/master/android/%E8%BF%9B%E9%98%B6/%E4%B8%89%E6%96%B9%E6%A1%86%E6%9E%B6/RxJava%E4%B8%A4%E7%A7%8D%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F.png)
+
+## 三、API说明
+
+### 3.1 Observable
+
+#### 3.1.1 interval和intervalRange
+
+* interval：表示每隔3秒发送一个整数，整数从0开始
+
+  ```java
+  Observable.interval(3, TimeUnit.SECONDS).subscribe(System.out::println);
+  ```
+
+* intervalRange：表示发送第一个整数停顿1秒，每隔3秒。发送一个整数。整数从2开始，发送10个数字，每次加1
+
+  ```java
+  Observable.intervalRange(2, 10, 1, 3, TimeUnit.SECONDS).subscribe(System.out::println);
+  ```
+
+#### 3.1.2 range和rangeLong
+
+* range：整数从5开始，发送10个数字，每次加1。
+
+  ```java
+  Observable.range(5, 10).subscribe(i -> System.out.println("test" + i + ""));
+  ```
+
+* rangeLong：整数从5开始，发送10个数字，每次加1。区别是long类型的。
+
+  ```java
+  Observable.rangeLong(5, 10).subscribe(i -> System.out.println("test" + i + ""));
+  ```
+
+#### 3.1.3 create
+
+* 创建Observable对象，需要传入发射器ObservableEmmiter
+
+* 通用写法
+
+  ```java
+  //输出 test1 test2
+  Observable.create(new ObservableOnSubscribe<Integer>() {
+      @Override
+      public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+      	emitter.onNext(1);
+          emitter.onNext(2);
+          emitter.onComplete();
+  	}
+  }).subscribe(new Consumer<Integer>() {
+  	// 每次接收到Observable的事件都会调用Consumer.accept（）
+      @Override
+      public void accept(Integer i) throws Exception {
+      	System.out.println("test" + i);
+  	}
+  });
+  
+  //输出 test:onSubscribe test1 test2 test:onComplete
+  Observable.create(new ObservableOnSubscribe<Integer>() {
+  	@Override
+      public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+      	emitter.onNext(1);
+          emitter.onNext(2);
+          emitter.onComplete();
+  	}
+  }).subscribe(new Observer<Integer>() {
+  	@Override
+      public void onSubscribe(Disposable d) {
+      	System.out.println("test:onSubscribe");
+  	}
+  
+      @Override
+      public void onNext(Integer integer) {
+      	System.out.println("test" + integer);
+  	}
+  
+      @Override
+      public void onError(Throwable e) {
+  	}
+  
+      @Override
+      public void onComplete() {
+      	System.out.println("test:onComplete");
+  	}
+  });
+  ```
+
+* lambda写法
+
+  ```java
+  //输出 test4 test5
+  Observable.create(emitter -> {
+  	emitter.onNext(4);
+      emitter.onNext(5);
+      emitter.onComplete();
+  }).subscribe(i -> System.out.println("test" + i));
+  ```
+
+## 三、基本使用
+
+### 1.1 创建被观察者和生产事件
 
 ```java
 Observable<Integer> observable = Observable.create(new ObservableOnSubscribe<Integer>() {
@@ -68,7 +227,7 @@ Observable observable = Observable.from(words);
 // onCompleted();
 ```
 
-### 步骤2：创建观察者 （`Observer` ）并 定义响应事件的行为
+### 1.2 创建观察者 （`Observer` ）并 定义响应事件的行为
 
 - 方法1：采用Observer 接口
 
@@ -151,7 +310,7 @@ Subscriber<String> subscriber = new Subscriber<Integer>() {
   > 1. onStart()：在还未响应事件前调用，用于做一些初始化工作 
   > 2. unsubscribe()：用于取消订阅。在该方法被调用后，观察者将不再接收 & 响应事件 。 调用该方法前，先使用 isUnsubscribed() 判断状态，确定被观察者Observable是否还持有观察者Subscriber的引用，如果引用不能及时释放，就会出现内存泄露 
 
-### 步骤3.通过订阅（Subscribe）连接观察者和被观察者
+### 1.3 通过订阅（Subscribe）连接观察者和被观察者
 
 ```java
 observable.subscribe(observer);
