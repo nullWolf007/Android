@@ -316,6 +316,74 @@
 
 * `map`操作符对原始Observable发射的每一项数据应用一个你选择的函数，然后返回一个发射这些结果的Observable。默认不在任何特定的调度器上执行。
 
+* 示例代码
+
+  ```java
+  Observable.range(10, 3).map(String::valueOf).subscribe(System.out::println);
+  //输出 10 11 12 
+  ```
+
+**cast**
+
+* `cast`操作符将原始Observable发射的每一项数据都强制转换为一个指定的类型（多态），然后再发射数据，它是map的一个特殊版本。
+
+* 示例代码
+
+  ```java
+  Observable.just(new Date()).cast(Object.class).subscribe(System.out::print);
+  //把Date对象转换成Object对象
+  ```
+
+#### 3.2.2 flatMap和contactMap
+
+**flatMap**
+
+* `flatMap`将一个发送事件的上游Observable变换为多个发送事件的Observables，然后将它们发射的事件合并后放进一个单独的Observable里。需要注意的是, **flatMap并不保证事件的顺序**，也就是说转换之后的Observables的顺序不必与转换之前的序列的顺序一致。
+
+* 示例代码
+
+  ```java
+  Observable.range(10, 3)
+  	.flatMap((Function<Integer, ObservableSource<String>>) i -> Observable.just(String.valueOf(i)))
+      .subscribe(System.out::print);
+  ```
+
+**contactMap**
+
+* `contactMap`和`flatMap`类似，但是`contactMap`能够保证最终输出的顺序与上游发送的**顺序一致**。
+
+* 示例代码
+
+  ```java
+  Observable.range(10, 3)
+  	.concatMap((Function<Integer, ObservableSource<String>>) i -> Observable.just(String.valueOf(i)))
+      .subscribe(System.out::println);
+  ```
+
+#### 3.2.3 flatMapIterable
+
+* `flatMapIterable`可以用来将上流的任意一个元素转换成一个`Iterable`对象，然后我们可以对其进行消费。
+
+* 示例代码
+
+  ```java
+  Observable.range(10, 3)
+                  .flatMapIterable((Function<Integer, Iterable<?>>) integer -> Collections.singletonList(String.valueOf(integer))).subscribe(System.out::println);
+  ```
+
+#### 3.2.4 buffer
+
+* `buffer`该方法用于将整个流进行分组。下面的代码就是以3个为一组。本意就相当于缓冲区，缓冲区满了就发出，当剩余的数据不够填满缓冲区也会发出
+
+* 代码示例
+
+  ```java
+  Observable.range(10, 7).buffer(3)
+                  .subscribe(integers -> System.out.println(Arrays.toString(integers.toArray())));
+  ```
+
+#### 3.2.5 groupBy
+
 
 
 
