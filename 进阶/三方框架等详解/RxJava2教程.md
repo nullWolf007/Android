@@ -87,7 +87,7 @@
 
 ## 三、API说明
 
-### 3.1 Observable
+### 3.1 创建操作
 
 #### 3.1.1 interval和intervalRange
 
@@ -119,7 +119,7 @@
 
 #### 3.1.3 create
 
-* 创建Observable对象，需要传入发射器ObservableEmmiter
+* 创建Observable对象，需要传入发射器ObservableEmitter
 
 * 通用写法
 
@@ -140,14 +140,19 @@
   	}
   });
   
+  //lambda写法
+  //输出 test4 test5
+  Observable.create(emitter -> {
+  	emitter.onNext(4);
+      emitter.onNext(5);
+      emitter.onComplete();
+  }).subscribe(i -> System.out.println("test" + i));
+  
   //输出 test:onSubscribe test1 test2 test:onComplete
-  Observable.create(new ObservableOnSubscribe<Integer>() {
-  	@Override
-      public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-      	emitter.onNext(1);
-          emitter.onNext(2);
-          emitter.onComplete();
-  	}
+  Observable.create(emitter -> {
+  	emitter.onNext(1);
+      emitter.onNext(2);
+      emitter.onComplete();
   }).subscribe(new Observer<Integer>() {
   	@Override
       public void onSubscribe(Disposable d) {
@@ -170,18 +175,170 @@
   });
   ```
 
-* lambda写法
+
+#### 3.1.4 defer
+
+* `defer`直到有观察者订阅时才创建Observable，并且为每个观察者创建一个新的Observable。
+
+* `public static <T> Observable<T> defer(Callable<? extends ObservableSource<? extends T>> supplier)`
+
+* 示例代码
 
   ```java
-  //输出 test4 test5
-  Observable.create(emitter -> {
-  	emitter.onNext(4);
-      emitter.onNext(5);
-      emitter.onComplete();
-  }).subscribe(i -> System.out.println("test" + i));
+  Observable<Long> observable = Observable.defer((Callable<ObservableSource<Long>>) () -> Observable.just(System.currentTimeMillis()));
+  observable.subscribe(System.out::println);
+  observable.subscribe(System.out::println);
   ```
 
-## 三、基本使用
+* 说明：`defer`操作符会一直等待直到有观察者订阅它，然后它使用Observable工厂方法生成一个Observable。所以两个订阅输出的结果是不一致的
+
+* 比较示例：这两个订阅输出的结果是一致的
+
+  ```java
+  Observable observable = Observable.just(System.currentTimeMillis());
+  observable.subscribe(System.out::println);
+  observable.subscribe(System.out::println);
+  ```
+
+#### 3.1.5 empty和never和error
+
+* `public static<T> Observable empty()`：创建一个不发射任何数据但是正常终止的Observable；
+
+* `public static<T> Observable never()`：创建一个不发射数据也不终止的Observable；
+
+* `public static Observable error(Throwable exception)`：创建一个不发射数据以一个错误终止的Observable，它有几个重载版本，这里给出其中的一个。
+
+* 示例代码
+
+  ```java
+  System.out.println("----empty()----");
+  Observable.empty().subscribe(i -> System.out.println("next"), i -> System.out.println("error"), () -> System.out.println("complete"));
+  
+  System.out.println("----never()----");
+  Observable.never().subscribe(i -> System.out.println("next"), i -> System.out.println("error"), () -> System.out.println("complete"));
+  
+  System.out.println("----error()----");
+  Observable.error(new Exception()).subscribe(i -> System.out.println("next"), i -> System.out.println("error"), () -> System.out.println("complete"));
+  /*
+  * 输出
+  * ----empty()----
+  * complete
+  * ----never()----
+  * ----error()----
+  * error
+  */
+  ```
+
+#### 3.1.6 from
+
+* `from`系列的方法用来从指定的数据源总获取一个Obserable。把数据源的数据依次发出
+
+* `public static<T> Observable fromArray(T... items)`：从数组中获取；
+
+* `public static<T> Observable fromCallable(Callable<? extends T> supplier)`：从Callable中获取；
+
+* `public static<T> Observable fromFuture(Future<? extends T> future)`：从Future中获取，有多个重载版本，可以用来指定线程和超时等信息；
+
+* `public static<T> Observable fromIterable(Iterable<? extends T> source)`：从Iterable中获取；
+
+* `public static<T> Observable fromPublisher(Publisher<? extends T> publisher)`：从Publisher中获取。
+
+* 示例代码
+
+  ```java
+  Observable.fromArray(new String[]{"1", "2"}).subscribe(System.out::println);
+  //输出 1 2
+  ```
+
+#### 3.1.7 just
+
+* just把传入的item依次发出
+
+* `public static<T> Observable just(T item)`，它还有许多个重载的版本，区别在于接受的参数的个数不同，最少1个，最多10个。
+
+#### 3.1.8 repeat
+
+* 指定序列要发出多少次
+
+* `public final Observable<T> repeat()`:无限次地发送指定的序列
+
+* `public final Observable<T> repeat(long times)`:指定的序列重复发射指定的次数
+
+* `public final Observable<T> repeatUntil(BooleanSupplier stop)`:在满足指定的要求的时候停止重复发送，否则会一直发送
+
+* 示例代码
+
+  ```java
+  Observable.just(1,2,3).repeat(3).subscribe(i -> System.out.println(i));
+  //输出三遍 1 2 3
+  ```
+
+#### 3.1.9 timer
+
+* timer操作符创建一个在给定的时间段之后返回一个特殊值的Observable，它在延迟一段给定的时间后发射一个简单的数字0
+
+* 实例代码：目前测试好像在Activity中才可以
+
+  ```java
+  Observable.timer(5, TimeUnit.SECONDS)
+  	.subscribe(new Observer<Long>() {
+      	@Override
+          public void onSubscribe(Disposable d) {
+          	Log.e("MainActivity", "onSubscribe: ");
+  		}
+  
+          @Override
+          public void onNext(Long aLong) {
+          	Log.e("MainActivity", "onNext: " + aLong);
+  		}
+  
+          @Override
+          public void onError(Throwable e) {
+          	Log.e("MainActivity", "onError: ");
+          }
+  
+          @Override
+          public void onComplete() {
+          	Log.e("MainActivity", "onComplete: ");
+  		}
+  });
+  //输出
+  //MainActivity: onSubscribe: 
+  //MainActivity: onNext: 0
+  //MainActivity: onComplete: 
+  ```
+
+### 3.2 变换操作
+
+#### 3.2.1 map和cast
+
+**map**
+
+* `map`操作符对原始Observable发射的每一项数据应用一个你选择的函数，然后返回一个发射这些结果的Observable。默认不在任何特定的调度器上执行。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### 1.1 创建被观察者和生产事件
 
