@@ -224,3 +224,33 @@ Call postCall = client.newCall(postRequest);
 ```
 
 **使用MultipartBody提交分块请求**
+
+```java
+//addPart和addFormDataPart类似，事实上addFormDataPart内部就是调用的addPart
+File file = new File("path");
+MediaType mediaType = MediaType.Companion.parse("File/*");
+//构建RequestBody存放多媒体
+RequestBody requestBody = RequestBody.create(file, mediaType);
+// 构建一个MultipartBody对象来存放待提交的数据
+MultipartBody multipartBody = new MultipartBody.Builder()
+	.setType(MultipartBody.FORM)
+    .addPart(
+    	Headers.of("token", "1"),
+        new FormBody.Builder().add("id", "1").build()
+	)
+    .addPart(
+    	Headers.of("token", "2"),
+        requestBody
+	)
+    .build();
+//创建网络请求 post方法
+Request postRequest = new Request.Builder()
+	.url("http://test")
+    .post(multipartBody)
+    .build();
+//创建Call对象
+Call postCall = client.newCall(postRequest);
+```
+
+
+
