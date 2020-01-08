@@ -1,11 +1,32 @@
-# Retrofit2
+[TOC]
 
-## 前言
+# Retrofit2教程
 
-- Retrofi是一个RESTful的HTTP网络请求框架的封装
-- Retrofit时基于OkHttp的，网络请求的工作本质时OkHttp完成的，而Retrofit仅负责网络请求接口的封装
+### 参考链接
 
-## 使用步骤
+* [Android：手把手带你 深入读懂 Retrofit 2.0 源码](https://www.jianshu.com/p/0c055ad46b6c)
+* [**Android Retrofit 2.0 的详细 使用攻略（含实例讲解）**](https://www.jianshu.com/p/a3e162261ab6)
+
+## 一、前言
+
+### 1.1 简介
+
+![**Retrofit2简介图解**](https://github.com/nullWolf007/images/raw/master/android/%E8%BF%9B%E9%98%B6/%E4%B8%89%E6%96%B9%E6%A1%86%E6%9E%B6/Retrofit2%E7%AE%80%E4%BB%8B%E5%9B%BE%E8%A7%A3.png)
+
+- 准确来说：Retrofit是一个RESTful的HTTP网络请求框架的封装
+- 原因：网络请求的工作本质时OkHttp完成的，而Retrofit仅负责网络请求接口的封装
+
+![Retrofit2本质过程](https://github.com/nullWolf007/images/raw/master/android/%E8%BF%9B%E9%98%B6/%E4%B8%89%E6%96%B9%E6%A1%86%E6%9E%B6/Retrofit2%E6%9C%AC%E8%B4%A8%E8%BF%87%E7%A8%8B.png)
+
+* App应用程序通过 Retrofit 请求网络，实际上是使用 Retrofit 接口层封装请求参数、Header、Url 等信息，之后由 OkHttp 完成后续的请求操作
+
+* 在服务端返回数据之后，OkHttp 将原始的结果交给 Retrofit，Retrofit根据用户的需求对结果进行解析
+
+### 1.2 与其他网络请求开源库比较
+
+![网络请求库比较](https://github.com/nullWolf007/images/raw/master/android/%E8%BF%9B%E9%98%B6/%E4%B8%89%E6%96%B9%E6%A1%86%E6%9E%B6/%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E5%BA%93%E6%AF%94%E8%BE%83.png)
+
+## 二、使用步骤
 
 ### 步骤1：添加Retrofit库依赖
 
@@ -92,9 +113,3 @@ Retrofit retrofit = new Retrofit.Builder()
 ### 步骤7：处理服务器返回的数据
 
 
-
-
-
-### 参考文章
-
-- [Android：手把手带你 深入读懂 Retrofit 2.0 源码](https://www.jianshu.com/p/0c055ad46b6c)
