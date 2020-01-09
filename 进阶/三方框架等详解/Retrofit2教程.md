@@ -1,5 +1,23 @@
 [TOC]
-
+- <!-- TOC -->
+- [ Retrofit2教程](#Retrofit2教程)
+  - [ 参考链接](#参考链接)
+  - [ 一、前言](#一前言)
+    - [ 1.1 简介](#11-简介)
+    - [ 1.2 与其他网络请求开源库比较](#12-与其他网络请求开源库比较)
+  - [ 二、使用步骤](#二使用步骤)
+    - [ 步骤1：添加Retrofit库依赖](#步骤1添加Retrofit库依赖)
+    - [ 步骤2：创建接收服务器返回数据的类](#步骤2创建接收服务器返回数据的类)
+    - [ 步骤3：创建用于描述网络请求的接口](#步骤3创建用于描述网络请求的接口)
+      - [ 3.3.1 添加路径类](#331-添加路径类)
+      - [ 3.3.2 添加接口](#332-添加接口)
+        - [ 说明](#说明)
+        - [ 注解类型](#注解类型)
+    - [ 步骤4：创建Retrofit实例](#步骤4创建Retrofit实例)
+    - [ 步骤5：创建网络请求接口实例并配置网络请求参数](#步骤5创建网络请求接口实例并配置网络请求参数)
+    - [ 步骤6：发送网络请求（异步/同步）](#步骤6发送网络请求异步同步)
+    - [ 步骤7：处理服务器返回的数据](#步骤7处理服务器返回的数据)
+  <!-- /TOC -->
 # Retrofit2教程
 
 ### 参考链接
@@ -46,69 +64,164 @@
 
 ### 步骤2：创建接收服务器返回数据的类
 
+```java
+public class ResultBean {
+    private int code;
+    private String data;
+    private String msg;
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+}
+```
+
 ### 步骤3：创建用于描述网络请求的接口
 
-- 采用 注解 描述网络请求参数和配置网络请求参数
+#### 3.3.1 添加路径类
 
-- 注解类型
+```java
+public class NetUrl {
+    public static final String TEST_PATH = "/test";
+}
+```
 
-  1. 网络请求方法
+#### 3.3.2 添加接口
 
-     （1）@GET：
+```java
+public interface Api {
+    @GET(NetUrl.TEST_PATH)
+    Call<ResultBean> getTest(@Header("token") String token);
+}
+```
 
-     （2）@POST：
+##### 说明
 
-     （3）@PUT：
+* 采用 注解 描述网络请求参数和配置网络请求参数
 
-     （4）@DELETE：
+##### 注解类型
 
-     （5）@PATH：
+* **网络请求方法**
 
-     （6）@HEAD：
+  * @GET：对应网络请求get方法
 
-     （7）@HTTP：用来替换上面的，可以设置method、path、hsaBody等属性
+  * @POST：对应网络请求post方法
 
-     - 网络请求完整Url = baseUrl() + 接口中 注解 的值
+  * @PUT：对应网络请求put方法
 
-  2. 标记类
+  * @DELETE：对应网络请求delete方法
 
-     （1）@FormUrlEncoded：表示请求体是一个Form表单；每个键值对需要用@Filed注解键名，随后提供值
+  * @PATH：
 
-     （2）@Multipart：表示请求体是一个支持文件上传的Form表单；每个键值对需要用@Part来注解键名，随后提供值
+  * @HEAD：
 
-     （3）@Streaming：表示返回的数据以流的形式返回，适用于返回数据较大的场景（如果没有该注释，默认把数据全部载入内存；之后获取数据也是从内存中读取）
+  * @HTTP：用来替换上面的，可以设置method、path、hsaBody等属性
 
-  3. 网络请求参数
+  * **网络请求完整Url = baseUrl() + 接口中 注解 的值**
 
-     （1）@Headers：添加请求头，作用于网络接口
+* **标记类**
 
-     （2）@Header：添加不固定值的Header，作用于接口的参数
+  * @FormUrlEncoded：表示请求体是一个Form表单；每个键值对需要用@Filed注解键名，随后提供值
 
-     （3）@Body：用于非表单请求体，以Post方式
+  * @Multipart：表示请求体是一个支持文件上传的Form表单；每个键值对需要用@Part来注解键名，随后提供值
 
-     （4）@Field和@FieldMap：向Post表单传入键值对，与@FormUrlEncoded配合使用
+  * @Streaming：表示返回的数据以流的形式返回，适用于返回数据较大的场景（如果没有该注释，默认把数据全部载入内存；之后获取数据也是从内存中读取）
 
-     （5）@Part和@PartMap：用于表单字段；适用于文件上传的情况，与@Multipart配合使用
+* **网络请求参数**
 
-     （6）@Query和@QueryMap：用于表单字段：功能和@Field和@FieldMap类似（区别时@Query和@QueryMap的数据体现在URL上，@Field与@FieldMap的数据体现在请求体上；但生成的数据是一致的）
+  * @Headers：添加请求头，作用于网络接口
 
-     （7）@Path：URL缺省值
+  * @Header：添加不固定值的Header，作用于接口的参数
 
-     （8）@URL：URL设置
+  * @Body：用于非表单请求体，以Post方式
+
+  * @Field和@FieldMap：向Post表单传入键值对，与@FormUrlEncoded配合使用
+
+    ```java
+    /**
+    * Map的key作为表单的键
+    */
+    @POST("/form")
+    @FormUrlEncoded
+    Call<ResultBean> test(@FieldMap Map<String, Object> map);
+    
+     // @FieldMap
+    Map<String, Object> map = new HashMap<>();
+    map.put("username", "Carson");
+    map.put("age", 24);
+    Call<ResultBean> call = service.test(map);
+    ```
+
+  * @Part和@PartMap：用于表单字段；适用于文件上传的情况，与@Multipart配合使用
+
+  * @Query和@QueryMap：用于表单字段：功能和@Field和@FieldMap类似（区别是@Query和@QueryMap的数据体现在URL上，@Field与@FieldMap的数据体现在请求体上；但生成的数据是一致的）
+
+  * @Path：URL缺省值
+
+    ```java
+    @GET("users/{user}/repos")
+    Call<ResponseBody> getBlog（@Path("user") String user ）;
+    // 访问的API是：https://api.github.com/users/{user}/repos
+    // 在发起请求时， {user} 会被替换为方法的第一个参数 user（被@Path注解作用）
+    ```
+
+  * @URL：URL设置
 
 ### 步骤4：创建Retrofit实例
 
 ```java
+//需要添加依赖
+//implementation 'com.squareup.retrofit2:adapter-rxjava:2.0.2'
+//implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
 Retrofit retrofit = new Retrofit.Builder()
-    .baseUrl("http://fanyi.youdao.com/") //设置网络请求的Url地址
+    .baseUrl("http://nullWolf.study.com/") //设置网络请求的Url地址
     .addConverterFactory(GsonConverterFactory.create()) // 设置数据解析器 		  
-    .addCallAdapterFactory(RxJavaCallAdapterFactory.create()); // 支持RxJava平台 
+    .addCallAdapterFactory(RxJavaCallAdapterFactory.create()) // 支持RxJava平台 
 	.build(); 
 ```
 
 ### 步骤5：创建网络请求接口实例并配置网络请求参数
 
+```java
+Api api = retrofit.create(Api.class);
+Call<ResultBean> call = api.getTest("111");
+```
+
 ### 步骤6：发送网络请求（异步/同步）
+
+```java
+call.enqueue(new Callback<ResultBean>() {
+	@Override
+    public void onResponse(Call<ResultBean> call, Response<ResultBean> response) {
+    	// 对返回数据进行处理
+	}
+
+    @Override
+    public void onFailure(Call<ResultBean> call, Throwable t) {
+    	//请求失败
+	}
+});
+```
 
 ### 步骤7：处理服务器返回的数据
 
