@@ -84,6 +84,7 @@
     - [ 4.2 RxAndroid线程](#42-RxAndroid线程)
       - [ 4.2.1 AndroidSchedulers.mainThread()](#421-AndroidSchedulersmainThread)
     - [ 4.3 subscribeOn和observeOn](#43-subscribeOn和observeOn)
+  - [ 五、实例核心代码](#五实例核心代码)
   <!-- /TOC -->
 # RxJava2教程
 
@@ -964,7 +965,13 @@ Observable.range(5, 5).any(i -> i > 5).subscribe(System.out::println); // true
       .subscribe(i -> Log.e("MainActivity", "onCreate: " + i));
   ```
 
-  
+
+## 五、实例核心代码
+
+* 接口地址(金山词霸API)：http://fy.iciba.com/ajax.php?a=fy&f=auto&t=auto&w=hello,world
+* 主要分给几部分：NetUrl存储路径的后半部分，Api存储接口方法，AppConfig存储了路径的前半部分(接口前半部分都是同一的)，NetUtils提供获取Retrofit的方法，GetDataResultBean为返回类
+
+* 查看核心源代码请点击[RxJava2+Retrofit2+OkHttp实例核心代码](https://github.com/nullWolf007/ToolProject/tree/master/RxJava2%2BRetrofit2%2BOkHttp实例核心代码)
 
 
 

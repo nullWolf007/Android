@@ -17,6 +17,7 @@
     - [ 步骤5：创建网络请求接口实例并配置网络请求参数](#步骤5创建网络请求接口实例并配置网络请求参数)
     - [ 步骤6：发送网络请求（异步/同步）](#步骤6发送网络请求异步同步)
     - [ 步骤7：处理服务器返回的数据](#步骤7处理服务器返回的数据)
+  - [ 三、实例核心代码](#三实例核心代码)
   <!-- /TOC -->
 # Retrofit2教程
 
@@ -225,4 +226,9 @@ call.enqueue(new Callback<ResultBean>() {
 
 ### 步骤7：处理服务器返回的数据
 
+## 三、实例核心代码
 
+* 接口地址(金山词霸API)：http://fy.iciba.com/ajax.php?a=fy&f=auto&t=auto&w=hello,world
+* 主要分给几部分：NetUrl存储路径的后半部分，Api存储接口方法，AppConfig存储了路径的前半部分(接口前半部分都是同一的)，NetUtils提供获取Retrofit的方法，GetDataResultBean为返回类
+
+* 查看核心源代码请点击[RxJava2+Retrofit2+OkHttp实例核心代码](https://github.com/nullWolf007/ToolProject/tree/master/RxJava2%2BRetrofit2%2BOkHttp实例核心代码)

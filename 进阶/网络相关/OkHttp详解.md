@@ -30,6 +30,7 @@
     - [ 3.1 设置请求头](#31-设置请求头)
     - [ 3.2 设置超时](#32-设置超时)
     - [ 3.3 设置缓存](#33-设置缓存)
+  - [ 四、实例核心代码](#四实例核心代码)
   <!-- /TOC -->
 # OkHttp详解
 
@@ -386,7 +387,12 @@ OkHttpClient client = new OkHttpClient.Builder()
 * 一个缓存目录同时拥有多个缓存访问是错误的。大多数程序只需要调用一次new OkHttpClient()，在第一次调用时配置好缓存，然后其他地方只需要调用这个实例就可以了。否则两个缓存示例互相干扰，破坏响应缓存，而且有可能会导致程序崩溃。 
 * 响应缓存使用HTTP头作为配置。你可以在请求头中添加Cache-Control: max-stale=3600 ,OkHttp缓存会支持。你的服务通过响应头确定响应缓存多长时间，例如使用Cache-Control: max-age=9600。
 
+## 四、实例核心代码
 
+* 接口地址(金山词霸API)：http://fy.iciba.com/ajax.php?a=fy&f=auto&t=auto&w=hello,world
+* 主要分给几部分：NetUrl存储路径的后半部分，Api存储接口方法，AppConfig存储了路径的前半部分(接口前半部分都是同一的)，NetUtils提供获取Retrofit的方法，GetDataResultBean为返回类
+
+* 查看核心源代码请点击[RxJava2+Retrofit2+OkHttp实例核心代码](https://github.com/nullWolf007/ToolProject/tree/master/RxJava2%2BRetrofit2%2BOkHttp实例核心代码)
 
 
 
