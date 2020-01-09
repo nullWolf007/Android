@@ -24,9 +24,13 @@
         - [ 使用MultipartBody提交分块请求](#使用MultipartBody提交分块请求)
         - [ 自定义RequestBody实现流的上传](#自定义RequestBody实现流的上传)
     - [ 2.3 执行请求](#23-执行请求)
+      - [ 2.3.1 同步请求](#231-同步请求)
+      - [ 2.3.2 异步请求](#232-异步请求)
+  - [ 三、其他设置](#三其他设置)
+    - [ 3.1 设置请求头](#31-设置请求头)
+    - [ 3.2 设置超时](#32-设置超时)
+    - [ 3.3 设置缓存](#33-设置缓存)
   <!-- /TOC -->
-[TOC]
-
 # OkHttp详解
 
 ### 参考链接
@@ -312,6 +316,77 @@ Call postCall = client.newCall(postRequest);
 ```
 
 ### 2.3 执行请求
+
+#### 2.3.1 同步请求
+
+```java
+//Android中网络请求不能在主线程中
+Response response = postCall.execute();
+```
+
+#### 2.3.2 异步请求
+
+```java
+postCall.enqueue(new Callback() {
+	@Override
+    public void onFailure(@NotNull Call call, @NotNull IOException e) {
+    	//失败回调
+	}
+
+    @Override
+    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+    	//成功回调，当前线程为子线程，如果需要更新UI，需要post到主线程中
+        boolean successful = response.isSuccessful();
+        //响应消息头
+        Headers headers = response.headers();
+        //响应消息体
+        ResponseBody body = response.body();
+        String content = response.body().string();//返回的数据内容
+        //缓存控制
+        CacheControl cacheControl = response.cacheControl();
+	}
+});
+//String content=response.body().string(); //获取字符串
+//InputStream inputStream = response.body().byteStream();//获取字节流(比如下载文件)
+```
+
+## 三、其他设置
+
+### 3.1 设置请求头
+
+```java
+Request postRequest = new Request.Builder()
+	.url("http://test")
+    .header("User-Agent", "Test")
+    .addHeader("token", "123")
+    .build();
+```
+
+### 3.2 设置超时
+
+```java
+OkHttpClient client = new OkHttpClient.Builder()
+	.connectTimeout(10, TimeUnit.SECONDS)//连接超时
+    .readTimeout(10, TimeUnit.SECONDS)//读取超时(数据传输时间)
+    .writeTimeout(10, TimeUnit.SECONDS)//写入超时
+    .build();
+```
+
+### 3.3 设置缓存
+
+```java
+File cacheDir = new File(getCacheDir(), "okhttp_cache");
+Cache cache = new Cache(cacheDir, 10 * 1024 * 1024);//缓存目录 缓存大小
+OkHttpClient client = new OkHttpClient.Builder()
+	.cache(cache)
+    .build();
+```
+
+* 为了缓存响应，你需要一个你可以读写的缓存目录，和缓存大小的限制。这个缓存目录应该是私有的，不信任的程序应不能读取缓存内容。 
+* 一个缓存目录同时拥有多个缓存访问是错误的。大多数程序只需要调用一次new OkHttpClient()，在第一次调用时配置好缓存，然后其他地方只需要调用这个实例就可以了。否则两个缓存示例互相干扰，破坏响应缓存，而且有可能会导致程序崩溃。 
+* 响应缓存使用HTTP头作为配置。你可以在请求头中添加Cache-Control: max-stale=3600 ,OkHttp缓存会支持。你的服务通过响应头确定响应缓存多长时间，例如使用Cache-Control: max-age=9600。
+
+
 
 
 
