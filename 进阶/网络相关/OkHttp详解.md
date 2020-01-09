@@ -1,4 +1,31 @@
 [TOC]
+- <!-- TOC -->
+- [ OkHttp详解](#OkHttp详解)
+  - [ 参考链接](#参考链接)
+  - [ 一、前言](#一前言)
+    - [ 1.1 Android四种网络请求](#11-Android四种网络请求)
+    - [ 1.2 OkHttp简介](#12-OkHttp简介)
+      - [ 1.2.1 简述](#121-简述)
+      - [ 1.2.2 引入](#122-引入)
+      - [ 1.2.3 基本步骤](#123-基本步骤)
+  - [ 二、OkHttp的基本使用](#二OkHttp的基本使用)
+    - [ 2.1 创建OkHttpClient](#21-创建OkHttpClient)
+      - [ 2.1.1 创建简单的OkHttpClient](#211-创建简单的OkHttpClient)
+      - [ 2.1.2 创建稍复杂的OkHttpClient](#212-创建稍复杂的OkHttpClient)
+      - [ 2.1.3 两种拦截器](#213-两种拦截器)
+      - [ 2.1.4 注意](#214-注意)
+    - [ 2.2 创建请求](#22-创建请求)
+      - [ 2.2.1 GET请求](#221-GET请求)
+      - [ 2.2.2 POST请求](#222-POST请求)
+        - [ 使用RequestBody传递json](#使用RequestBody传递json)
+        - [ 使用RequestBody传递File](#使用RequestBody传递File)
+        - [ 使用FormBody传递键值对参数](#使用FormBody传递键值对参数)
+        - [ 使用MultipartBody同时传递键值对参数和File对象](#使用MultipartBody同时传递键值对参数和File对象)
+        - [ 使用MultipartBody提交分块请求](#使用MultipartBody提交分块请求)
+        - [ 自定义RequestBody实现流的上传](#自定义RequestBody实现流的上传)
+    - [ 2.3 执行请求](#23-执行请求)
+  <!-- /TOC -->
+[TOC]
 
 # OkHttp详解
 
@@ -150,7 +177,7 @@ Call getCall = client.newCall(getRequest);
 
 #### 2.2.2 POST请求
 
-**使用RequestBody传递json**
+##### 使用RequestBody传递json
 
 ```java
 //使用json的形式构建一个RequestBody对象来存放待提交的数据
@@ -167,7 +194,7 @@ Request postRequest = new Request.Builder()
 Call postCall = client.newCall(postRequest);
 ```
 
-**使用RequestBody传递File**
+##### 使用RequestBody传递File
 
 ```java
 MediaType mediaType = MediaType.Companion.parse("File/*");
@@ -182,7 +209,7 @@ Request postRequest = new Request.Builder()
 Call postCall = client.newCall(postRequest);
 ```
 
-**使用FormBody传递键值对参数**
+##### 使用FormBody传递键值对参数
 
 ```java
 // 构建一个RequestBody对象来存放待提交的数据
@@ -200,7 +227,7 @@ Request postRequest = new Request.Builder()
 Call postCall = client.newCall(postRequest);
 ```
 
-**使用MultipartBody同时传递键值对参数和File对象**
+##### 使用MultipartBody同时传递键值对参数和File对象
 
 ```java
 //一般ForBody就是针对键值对 RequestBody就是多媒体 都有的话就是MultipartBody
@@ -223,7 +250,7 @@ Request postRequest = new Request.Builder()
 Call postCall = client.newCall(postRequest);
 ```
 
-**使用MultipartBody提交分块请求**
+##### 使用MultipartBody提交分块请求
 
 ```java
 //addPart和addFormDataPart类似，事实上addFormDataPart内部就是调用的addPart
@@ -251,6 +278,40 @@ Request postRequest = new Request.Builder()
 //创建Call对象
 Call postCall = client.newCall(postRequest);
 ```
+
+##### 自定义RequestBody实现流的上传
+
+```java
+//requestBody对象重写了writeTo方法，里面有个BufferedSink对象，这个是okio包中的输出流，使用这个方法可以实现上传流的功能
+//使用RequestBody上传文件时，并没有实现断点续传的功能。我可以使用这种方法结合RandomAccessFile类实现断点续传的功能。
+File file = new File("path");
+//构建RequestBody存放多媒体
+RequestBody requestBody = new RequestBody() {
+	@Nullable
+    @Override
+    public MediaType contentType() {
+    	return null;
+	}
+
+    @Override
+    public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
+    	FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] buffer = new byte[1024 * 8];
+        if (fileInputStream.read(buffer) != -1) {
+        	bufferedSink.write(buffer);
+		}
+	}
+};
+//创建网络请求 post方法
+Request postRequest = new Request.Builder()
+	.url("http://test")
+    .post(requestBody)
+    .build();
+//创建Call对象
+Call postCall = client.newCall(postRequest);
+```
+
+### 2.3 执行请求
 
 
 
