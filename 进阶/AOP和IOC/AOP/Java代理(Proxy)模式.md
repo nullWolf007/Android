@@ -1,3 +1,24 @@
+[TOC]
+- <!-- TOC -->
+- [ Java代理(Proxy)模式](#Java代理Proxy模式)
+  - [ 参考链接](#参考链接)
+  - [ 一、前言](#一前言)
+    - [ 1.1 概述](#11-概述)
+    - [ 1.2 三种代理](#12-三种代理)
+      - [ 1.2.1 静态代理](#121-静态代理)
+      - [ 1.2.2 JDK动态代理](#122-JDK动态代理)
+      - [ 1.2.3 Cglib代理](#123-Cglib代理)
+  - [ 二、实例](#二实例)
+    - [ 2.1 静态代理](#21-静态代理)
+      - [ 2.1.1 实例](#211-实例)
+      - [ 2.1.2 说明](#212-说明)
+    - [ 2.2 JDK动态代理](#22-JDK动态代理)
+      - [ 2.2.1 特点](#221-特点)
+      - [ 2.2.2 实例](#222-实例)
+    - [ 2.3 Cglib代理](#23-Cglib代理)
+      - [ 2.3.1 概述](#231-概述)
+      - [ 2.3.2 实例](#232-实例)
+  <!-- /TOC -->
 # Java代理(Proxy)模式
 
 ### 参考链接
@@ -259,7 +280,97 @@ public class Test {
 
 * 上面的三种方法本质上没有区别
 
+### 2.3 Cglib代理
 
+#### 2.3.1 概述
+
+* JDK动态代理要求target目标对象是一个接口的实现对象，假如target只是一个单独的对象，并没有实现任何接口，这时候就会用到Cglib代理(Code Generation Library)，即通过构建一个子类对象，从而实现对target的代理，因此target不能是final类(报错)，且目标对象的方法不能是final或static(不执行代理功能)
+
+#### 2.3.2 实例
+
+**导入**
+
+* org.chromattic:chromattic.cglib:1.0.0-beta8
+
+**AdminServiceCglib**
+
+```java
+public class AdminServiceCglib {
+
+    public void update() {
+        System.out.println("修改系统数据");
+    }
+
+    public Object find() {
+        System.out.println("查看系统数据");
+        return new Object();
+    }
+}
+```
+
+**AdminServiceCglibProxy**
+
+```java
+public class AdminServiceCglibProxy implements MethodInterceptor {
+    private Object target;
+
+    public AdminServiceCglibProxy(Object target) {
+        this.target = target;
+    }
+
+    public Object getProxyInstance() {
+        //工具类
+        Enhancer enhancer = new Enhancer();
+        //设置父类
+        enhancer.setSuperclass(target.getClass());
+        //设置回调函数
+        enhancer.setCallback(this);
+        //创建子类代理对象
+        return enhancer.create();
+    }
+
+    @Override
+    public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+        System.out.println("判断用户是否有权限进行操作");
+        Object obj = method.invoke(target);
+        System.out.println("记录用户执行操作的用户信息、更改内容和时间等");
+        //通过代理修改返回的对象
+        return new Integer(1);
+    }
+}
+```
+
+**Test**
+
+```java
+public class Test {
+    public static void main(String[] args) {
+        AdminServiceCglib target = new AdminServiceCglib();
+        AdminServiceCglibProxy proxyFactory = new AdminServiceCglibProxy(target);
+        AdminServiceCglib proxy = (AdminServiceCglib) proxyFactory.getProxyInstance();
+
+        System.out.println("代理对象：" + proxy.getClass());
+        Object obj = proxy.find();
+        System.out.println("find 返回对象：" + obj.getClass());
+        System.out.println("----------------------------------");
+        proxy.update();
+    }
+}
+```
+
+**输出**
+
+```java
+代理对象：class aop.AdminServiceCglib$$EnhancerByCGLIB$$b0f0ca1d
+判断用户是否有权限进行操作
+查看系统数据
+记录用户执行操作的用户信息、更改内容和时间等
+find 返回对象：class java.lang.Integer
+----------------------------------
+判断用户是否有权限进行操作
+修改系统数据
+记录用户执行操作的用户信息、更改内容和时间等
+```
 
 
 
