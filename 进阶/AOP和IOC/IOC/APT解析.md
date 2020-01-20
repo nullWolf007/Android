@@ -109,7 +109,19 @@
 
 ## 四、实例
 
-* 查看源码请点击[MuButterKnifeDemo](https://github.com/nullWolf007/MuButterKnife/tree/master/MuButterKnifeDemo)
+### 4.1 注意点
 
+* 如果Gradle的版本号大于5.X，插件版本大于3.0。则需额外添加`annotationProcessor 'com.google.auto.service:auto-service:1.0-rc3'`。如果版本低于的话，无需额外添加的。
+
+  ```java
+  implementation 'com.google.auto.service:auto-service:1.0-rc3'
+  annotationProcessor 'com.google.auto.service:auto-service:1.0-rc3'//额外添加的
+  implementation 'com.squareup:javapoet:1.10.0'
+  implementation project(':mubutterknife-annotations')
+  ```
+
+### 4.2 源码
+
+* 查看源码请点击[MuButterKnifeDemo](https://github.com/nullWolf007/MuButterKnife/tree/master/MuButterKnifeDemo)
 
 
