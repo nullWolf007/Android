@@ -8,8 +8,6 @@
 
 ### ActivityManagerService
 
-
-
 ## Activity生命周期
 
 ### 跳转流程（最普通的startActivity）
@@ -42,8 +40,6 @@
 
 此时不会销毁，但是会调用onConfigurationChanged
 
-
-
 ## Activity的启动模式
 
 1.standard:标准模式，每次启动Activity都会重新创建一个新的实例
@@ -54,8 +50,6 @@
 
 4.singleInstance:单实例模式，只能单独的位于一个栈里面
 
-
-
 ## Activity的Flags
 
 1.FLAG_ACTIVITY_NEW_TASK：指定为singleTask模式
@@ -65,8 +59,6 @@
 3.FLAG_ACTIVITY_CLEAR_TOP：具有此标志的Activity，位于上方的都要出栈
 
 4.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS：具有这个标记的Activity不会出现在历史Activity的列表中
-
-
 
 ## IntentFilter的匹配规则
 
