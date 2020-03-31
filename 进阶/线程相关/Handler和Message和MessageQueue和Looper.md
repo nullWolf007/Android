@@ -543,7 +543,6 @@ new Thread() {
                 // TODO 子线程中通过handler发送消息给handler接收，由handler去更新TextView的值
                 try {
                        //do something
-
                         Message msg = new Message();
                         msg.what = UPDATE;                  
                         msg.obj = "更新后的值" ;
